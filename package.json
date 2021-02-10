@@ -1,0 +1,106 @@
+{
+  "name": "feedseeker",
+  "version": "1.0.0",
+  "description": "browser extension for seeking feeds",
+  "main": "index.js",
+  "repository": "https://github.com/lmorchard/feedseeker",
+  "author": "Les Orchard <me@lmorchard.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "start": "npm-run-all -p watch",
+    "clean": "rm -rf build && mkdir -p build",
+    "build": "npm-run-all clean && npm-run-all -p build:*",
+    "watch": "nodemon -w package.json --exec npm-run-all -- -p watch:*",
+    "lint": "npm-run-all lint:*",
+    "lint:js": "eslint src",
+    "build:images": "cp -r src/images build/",
+    "watch:images": "onchange -vi \"src/images/**\" -- npm run build:images",
+    "build:manifest": "./scripts/build-manifest-json",
+    "watch:manifest": "onchange -vi \"package.json\" -- npm run build:manifest",
+    "build:background": "rollup src/background/index.js --format iife --name background --file build/background.js",
+    "watch:background": "onchange -vi \"src/lib/**\" \"src/background/**\" -- npm run build:background",
+    "build:contentScript": "rollup src/contentScript/index.js --format iife --name contentScript --file build/contentScript.js",
+    "watch:contentScript": "onchange -vi \"src/lib/**\" \"src/contentScript/**\" -- npm run build:contentScript"
+  },
+  "eslintConfig": {
+    "env": {
+      "browser": true,
+      "es2021": true,
+      "node": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+      "ecmaVersion": 12,
+      "sourceType": "module"
+    },
+    "rules": {},
+    "overrides": [
+      {
+        "files": [
+          "src/background/**/*.js",
+          "src/contentScript/**/*.js"
+        ],
+        "globals": {
+          "browser": true
+        }
+      }
+    ]
+  },
+  "extensionManifest": {
+    "name": "FeedSeeker",
+    "permissions": [
+      "<all_urls>",
+      "storage",
+      "unlimitedStorage",
+      "tabs",
+      "history"
+    ],
+    "icons": {
+      "32": "images/logo.svg",
+      "48": "images/logo.svg",
+      "96": "images/logo.svg",
+      "128": "images/logo.svg"
+    },
+    "browser_action": {
+      "browser_style": true,
+      "default_title": "FeedSeeker",
+      "default_icon": {
+        "32": "images/logo.svg"
+      }
+    },
+    "content_scripts": [
+      {
+        "js": [
+          "contentScript.js"
+        ],
+        "matches": [
+          "<all_urls>"
+        ],
+        "run_at": "document_start"
+      }
+    ],
+    "background": {
+      "scripts": [
+        "background.js"
+      ]
+    },
+    "applications": {
+      "gecko": {
+        "id": "FeedSeeker@lmorchard.com",
+        "strict_min_version": "57.0"
+      }
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^7.19.0",
+    "mkdirp": "^1.0.4",
+    "nodemon": "^2.0.7",
+    "npm-run-all": "^4.1.5",
+    "onchange": "^7.1.0",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.38.5",
+    "web-ext": "^5.5.0"
+  }
+}

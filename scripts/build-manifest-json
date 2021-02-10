@@ -1,0 +1,32 @@
+#!/usr/bin/env node
+const fs = require("fs");
+const path = require("path");
+const mkdirp = require("mkdirp");
+
+const BUILD_PATH = path.join(__dirname, "..", "build");
+
+const {
+  name,
+  version,
+  description,
+  author,
+  homepage,
+  extensionManifest,
+} = require(path.join(__dirname, "..", "package.json"));
+
+const manifest = {
+  manifest_version: 2,
+  name,
+  version,
+  description,
+  author,
+  homepage_url: homepage,
+  ...extensionManifest,
+};
+
+mkdirp.sync(path.join(BUILD_PATH));
+fs.writeFileSync(
+  path.join(BUILD_PATH, "manifest.json"),
+  JSON.stringify(manifest, null, "  "),
+  "utf-8"
+);
