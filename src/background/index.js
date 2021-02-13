@@ -1,7 +1,7 @@
 import setupLog from "../lib/log";
 import Store from "../lib/store";
-import { createQueue, queues } from "../lib/queues";
-import { fetchFeed } from "../lib/feeds";
+import { setupFeeds, pollAllFeeds } from "../lib/feeds";
+import { setupQueues } from "../lib/queues";
 
 const log = setupLog("background");
 
@@ -11,44 +11,21 @@ const ports = {
 };
 
 async function init() {
+  await setupQueues();
+  await setupFeeds();
+
+  setTimeout(pollAllFeeds, 1000);
+
   browser.runtime.onConnect.addListener(handleConnect);
-  browser.browserAction.onClicked.addListener(openApp);
-
-  createQueue("feedPollQueue", {
-    concurrency: 4,
-    onTask: async feed => {
-      const fetchedFeed = await fetchFeed(feed);
-      await Store.updateFeed(feed, (update) => ({
-        ...update,
-        ...fetchedFeed,
-        fetchedCount: (update.fetchedCount || 0) + 1,
-      }));
-    },
-    onResolve: (result, task, taskId) => {
-      console.debug("resolve", taskId, task, result);
-    },
-    onReject: (result, task, taskId) => {
-      console.debug("reject", taskId, task, result);
-    },
-  });
-
-  setTimeout(async () => {
-    pollAllFeeds();
-  }, 2000);
+  browser.browserAction.onClicked.addListener(handleBrowserAction);
 }
 
-async function pollAllFeeds() {
-  log.debug("pollAllFeeds")
-  const feedIDs = await Store.getFeedIDs();
-  for (const feedID of feedIDs) {
-    const feed = await Store.getFeed(feedID);
-    queues.feedPollQueue.push(feed);
-  }
+async function handleBrowserAction() {
+  pollAllFeeds();
+  // openApp();
 }
 
 async function openApp() {
-  pollAllFeeds();
-
   const pageURL = browser.runtime.getURL("/app/index.html");
 
   // TODO: shouldn't getViews work for this?

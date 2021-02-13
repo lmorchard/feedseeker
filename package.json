@@ -22,6 +22,8 @@
     "watch:manifest": "onchange -vi \"package.json\" -- npm run build:manifest",
     "build:rollup": "rollup -c",
     "watch:rollup": "rollup -c --watch --no-watch.clearScreen",
+    "build:vendor": "mkdir -p build/vendor; cp node_modules/rss-parser/dist/rss-parser.min.js build/vendor",
+    "watch:vendor": "onchange -vi \"package.json\" -- npm run build:vendor",
     "build:appAssets": "mkdir -p build/app; cp src/app/*.html src/app/*.css build/app/",
     "watch:appAssets": "onchange -vi \"src/app/*.{html,css}\" -- npm run build:appAssets"
   },
@@ -95,7 +97,8 @@
     ],
     "background": {
       "scripts": [
-        "background.js"
+        "background.js",
+        "vendor/rss-parser.min.js"
       ]
     },
     "browser_specific_settings": {

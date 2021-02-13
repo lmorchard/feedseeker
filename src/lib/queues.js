@@ -4,18 +4,8 @@ const log = setupLog("lib/queues");
 
 export const queues = {};
 
-export default async function setupQueues() {
-  log.debug("setupQueues");
-
-  /*
-  Object.assign(queues, {
-    feedPoll: new QueueRunner({
-      concurrency: 16,
-      onTask: async (task) => log.debug(task),
-    }),
-  });
-  */
-
+export async function setupQueues() {
+  log.trace("setupQueues");
   return queues;
 }
 
