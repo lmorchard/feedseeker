@@ -8,10 +8,10 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "start": "npm-run-all -p watch",
+    "start": "nodemon -w package.json -w rollup.config.js --exec npm-run-all -- -p watch",
     "clean": "rm -rf build && mkdir -p build",
-    "build": "npm-run-all clean && npm-run-all -p build:*",
-    "watch": "nodemon -w package.json --exec npm-run-all -- -p watch:*",
+    "build": "npm-run-all -p build:*",
+    "watch": "npm-run-all -p watch:*",
     "lint": "npm-run-all lint:*",
     "lint:js": "eslint src",
     "fix:lint": "eslint --fix src",
@@ -20,16 +20,12 @@
     "watch:images": "onchange -vi \"src/images/**\" -- npm run build:images",
     "build:manifest": "./scripts/build-manifest-json",
     "watch:manifest": "onchange -vi \"package.json\" -- npm run build:manifest",
-    "build:background": "rollup src/background/index.js --format iife --name background --file build/background.js",
-    "watch:background": "onchange -vi \"src/lib/**\" \"src/background/**\" -- npm run build:background",
-    "build:contentScript": "rollup src/contentScript/index.js --format iife --name contentScript --file build/contentScript.js",
-    "watch:contentScript": "onchange -vi \"src/lib/**\" \"src/contentScript/**\" -- npm run build:contentScript",
+    "build:rollup": "rollup -c",
+    "watch:rollup": "rollup -c --watch --no-watch.clearScreen",
     "build:appAssets": "mkdir -p build/app; cp src/app/*.html src/app/*.css build/app/",
-    "watch:appAssets": "onchange -vi \"src/app/*.{html,css}\" -- npm run build:appAssets",
-    "build:appJS": "rollup src/app/index.js --format iife --name contentScript --file build/app/index.js",
-    "watch:appJS": "onchange -vi \"src/lib/**\" \"src/app/index.js\" -- npm run build:appJS"
+    "watch:appAssets": "onchange -vi \"src/app/*.{html,css}\" -- npm run build:appAssets"
   },
-   "eslintConfig": {
+  "eslintConfig": {
     "env": {
       "browser": true,
       "es2021": true,
@@ -111,6 +107,7 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^11.1.1",
     "eslint": "^7.19.0",
     "mkdirp": "^1.0.4",
     "nodemon": "^2.0.7",

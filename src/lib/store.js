@@ -4,9 +4,9 @@ const FEEDS_PREFIX = `feeds.`;
 const toStoreId = (id) => `${PREFIX}${id}`;
 //const fromStoreId = (id) => id.slice(PREFIX.length);
 
-const get = async (id) => {
+const get = async (id, defval) => {
   const v = await browser.storage.sync.get(toStoreId(id));
-  return v[toStoreId(id)];
+  return v[toStoreId(id)] || defval;
 };
 
 const set = async (id, value) =>
@@ -17,28 +17,33 @@ export const Store = {
 
   async getFeedIDs() {
     const ids = await get("feedIDs");
-    console.log("GOT IDS", ids);
     if (ids) return ids;
     await set("feedIDs", []);
     return [];
   },
 
   async indexFeedID(id) {
-    const ids = await Store.getFeedIDs();
-    console.log("WHAT WHAT", ids);
+    const ids = await this.getFeedIDs();
     if (!ids.includes(id)) {
       ids.push(id);
       await set("feedIDs", ids);
     }
   },
 
-  async getFeed(id) {
-    return await get(`${FEEDS_PREFIX}${id}`);
+  async getFeed(id, defval) {
+    return get(`${FEEDS_PREFIX}${id}`, defval);
   },
 
-  async updateFeed(feed) {
+  async setFeed(id, feed) {
+    return set(`${FEEDS_PREFIX}${id}`, feed);
+  },
+
+  async updateFeed(feed, updater) {
     const id = feed.href;
-    await set(`${FEEDS_PREFIX}${id}`, feed);
+    const existing = await this.getFeed(id, {});
+    const merged = { ...existing, ...feed };
+    const updated = updater ? await updater(merged) : merged;
+    await this.setFeed(id, updated);
     await this.indexFeedID(id);
   },
 };
