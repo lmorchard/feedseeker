@@ -1,19 +1,27 @@
+import { hashStringAsID } from "./utils";
+
 const PREFIX = "feedseeker.";
 const FEEDS_PREFIX = `feeds.`;
 
 const toStoreId = (id) => `${PREFIX}${id}`;
 //const fromStoreId = (id) => id.slice(PREFIX.length);
 
+const storage = browser.storage.local;
+
 const get = async (id, defval) => {
-  const v = await browser.storage.sync.get(toStoreId(id));
+  const v = await storage.get(toStoreId(id));
   return v[toStoreId(id)] || defval;
 };
 
 const set = async (id, value) =>
-  browser.storage.sync.set({ [toStoreId(id)]: value });
+  storage.set({ [toStoreId(id)]: value });
 
 export const Store = {
   async init() {},
+
+  async feedToID(feed) {
+    return hashStringAsID(feed.href);
+  },
 
   async getFeedIDs() {
     const ids = await get("feedIDs");
@@ -39,9 +47,9 @@ export const Store = {
   },
 
   async updateFeed(feed, updater) {
-    const id = feed.href;
+    const id = await this.feedToID(feed);
     const existing = await this.getFeed(id, {});
-    const merged = { ...existing, ...feed };
+    const merged = { ...existing, ...feed, id };
     const updated = updater ? await updater(merged) : merged;
     await this.setFeed(id, updated);
     await this.indexFeedID(id);

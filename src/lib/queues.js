@@ -7,12 +7,14 @@ export const queues = {};
 export default async function setupQueues() {
   log.debug("setupQueues");
 
+  /*
   Object.assign(queues, {
     feedPoll: new QueueRunner({
       concurrency: 16,
       onTask: async (task) => log.debug(task),
     }),
   });
+  */
 
   return queues;
 }

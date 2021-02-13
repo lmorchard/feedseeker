@@ -1,6 +1,7 @@
 import setupLog from "../lib/log";
 import Store from "../lib/store";
-import { createQueue, queueStats } from "../lib/queues";
+import { createQueue, queues } from "../lib/queues";
+import { fetchFeed } from "../lib/feeds";
 
 const log = setupLog("background");
 
@@ -9,33 +10,45 @@ const ports = {
   feedDetect: {},
 };
 
-const wait = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
-
 async function init() {
   browser.runtime.onConnect.addListener(handleConnect);
   browser.browserAction.onClicked.addListener(openApp);
 
-  const playQueue = createQueue("playQueue", {
+  createQueue("feedPollQueue", {
     concurrency: 4,
-    onTask: async (task) => {
-      log.debug(`${task} start`, playQueue.pending, playQueue.size);
-      await wait(Math.random() * 3000);
-      log.debug(`${task} end`, playQueue.pending, playQueue.size);
+    onTask: async feed => {
+      const fetchedFeed = await fetchFeed(feed);
+      await Store.updateFeed(feed, (update) => ({
+        ...update,
+        ...fetchedFeed,
+        fetchedCount: (update.fetchedCount || 0) + 1,
+      }));
     },
-    onEmpty: () => log.debug("queue empty"),
-    onDone: () => log.debug("queue done"),
+    onResolve: (result, task, taskId) => {
+      console.debug("resolve", taskId, task, result);
+    },
+    onReject: (result, task, taskId) => {
+      console.debug("reject", taskId, task, result);
+    },
   });
-  for (let idx = 0; idx < 12; idx++) {
-    playQueue.push(`task ${idx}`);
+
+  setTimeout(async () => {
+    pollAllFeeds();
+  }, 2000);
+}
+
+async function pollAllFeeds() {
+  log.debug("pollAllFeeds")
+  const feedIDs = await Store.getFeedIDs();
+  for (const feedID of feedIDs) {
+    const feed = await Store.getFeed(feedID);
+    queues.feedPollQueue.push(feed);
   }
-  setTimeout(() => {
-    for (let idx = 0; idx < 14; idx++) {
-      playQueue.push(`task ${idx}`);
-    }
-  }, 15000);
 }
 
 async function openApp() {
+  pollAllFeeds();
+
   const pageURL = browser.runtime.getURL("/app/index.html");
 
   // TODO: shouldn't getViews work for this?
