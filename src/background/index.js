@@ -1,8 +1,10 @@
+import config from "../lib/config";
 import setupLog from "../lib/log";
 import Store from "../lib/store";
-import { setupFeeds, pollAllFeeds } from "../lib/feeds";
-import { setupQueues } from "../lib/queues";
+import { setupFeeds, pollAllFeeds, pollOneFeed } from "../lib/feeds";
+import { setupQueues, queueStats } from "../lib/queues";
 
+const { UPDATE_STATS_INTERVAL, FEED_POLL_INTERVAL } = config();
 const log = setupLog("background");
 
 const ports = {
@@ -14,15 +16,27 @@ async function init() {
   await setupQueues();
   await setupFeeds();
 
-  setTimeout(pollAllFeeds, 1000);
-
   browser.runtime.onConnect.addListener(handleConnect);
   browser.browserAction.onClicked.addListener(handleBrowserAction);
+
+  setInterval(updateStats, UPDATE_STATS_INTERVAL);
+  setInterval(pollAllFeeds, FEED_POLL_INTERVAL);
+}
+
+const postMessage = (port, type, data) => port.postMessage({ type, data });
+
+const broadcastMessage = (name, type, data) =>
+  Object.values(ports[name]).forEach((port) => postMessage(port, type, data));
+
+function updateStats() {
+  broadcastMessage("appPage", "updateStats", {
+    time: Date.now(),
+    queue: queueStats(),
+  });
 }
 
 async function handleBrowserAction() {
-  pollAllFeeds();
-  // openApp();
+  openApp();
 }
 
 async function openApp() {
@@ -67,36 +81,41 @@ function handleConnect(port) {
   });
 }
 
-function handleMessage({ port, message }) {
+async function handleMessage({ port, message }) {
   const id = port.sender.tab.id;
   const { type, data } = message;
-  const handler =
-    type in messageTypes ? messageTypes[type] : messageTypes.default;
-  handler({ port, id, message, type, data }).catch((err) =>
-    log.error("message error", "" + err)
-  );
-}
+  log.trace("handleMessage", type, data);
 
-const messageTypes = {
-  foundFeeds: async ({ id, data: feeds }) => {
-    browser.pageAction.show(id);
-    browser.browserAction.setBadgeBackgroundColor({
-      color: "#88ff88",
-      tabId: id,
-    });
-    browser.browserAction.setBadgeText({
-      text: "" + feeds.length,
-      tabId: id,
-    });
-    for (let feed of feeds) {
-      log.info("Found feed", feed);
-      await Store.updateFeed(feed, (update) => ({
-        ...update,
-        seenCount: (update.seenCount || 0) + 1,
-      }));
+  switch (type) {
+    case "pollAllFeeds": {
+      return pollAllFeeds();
     }
-  },
-};
+    case "foundFeeds": {
+      const feeds = data;
+      browser.pageAction.show(id);
+      browser.browserAction.setBadgeBackgroundColor({
+        color: "#88ff88",
+        tabId: id,
+      });
+      browser.browserAction.setBadgeText({
+        text: "" + feeds.length,
+        tabId: id,
+      });
+      for (let feed of feeds) {
+        log.info("Found feed", feed);
+        await Store.updateFeed(feed, (update) => ({
+          ...update,
+          seenCount: (update.seenCount || 0) + 1,
+        }));
+        await pollOneFeed(feed);
+      }
+      return;
+    }
+    default: {
+      log.debug("unknown message", message);
+    }
+  }
+}
 
 init()
   .then(() => log.info("READY."))

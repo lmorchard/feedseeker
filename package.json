@@ -109,6 +109,8 @@
     }
   },
   "dependencies": {
+    "htm": "^3.0.4",
+    "preact": "^10.5.12",
     "rss-parser": "^3.11.0"
   },
   "devDependencies": {
