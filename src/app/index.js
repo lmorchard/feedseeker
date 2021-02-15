@@ -2,6 +2,7 @@ import { html, render } from "htm/preact";
 
 import setupLog from "../lib/log";
 import Store from "../lib/store";
+import App from "./components/App";
 
 const log = setupLog("app");
 
@@ -33,12 +34,13 @@ const updateFeedItems = async () => {
   updateApp({ items });
 };
 
-const renderApp = () =>
+const renderApp = () => {
   render(
-    html`<${App} ...${appProps} />`,
+    html`<${App} postMessage=${postMessage} ...${appProps} />`,
     document.getElementById("app"),
     document.getElementById("app").firstChild
   );
+};
 
 const updateApp = (props = {}) => {
   appProps = { ...appProps, ...props };
@@ -53,8 +55,6 @@ function setupPort() {
 
 const postMessage = (type, data) => port.postMessage({ type, data });
 
-const pollAllFeeds = () => postMessage("pollAllFeeds");
-
 async function handleMessage({ message }) {
   const { type, data } = message;
   switch (type) {
@@ -67,27 +67,6 @@ async function handleMessage({ message }) {
 
 const updateFeedIDs = async () => {
   updateApp({ feedIDs: await Store.getFeedIDs() });
-};
-
-const App = ({ stats = {}, items = [] }) => {
-  items.sort((a, b) => b.isoDate.localeCompare(a.isoDate));
-  return html`
-    <div>
-      <h1>FeedSeeker</h1>
-      <pre>${JSON.stringify(stats)}</pre>
-      <button onClick=${pollAllFeeds}>Poll all feeds</button>
-      <h2>Items</h2>
-      <ul>
-        ${items.map(
-          ({ title, link, isoDate, feed }, idx) =>
-            html`<li key="${idx}">
-              ${isoDate} - ${feed.title} <br />
-              <a href="${link}">${title}</a>
-            </li>`
-        )}
-      </ul>
-    </div>
-  `;
 };
 
 init()

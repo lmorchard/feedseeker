@@ -1,10 +1,16 @@
-import config from "../lib/config";
-import setupLog from "../lib/log";
-import Store from "../lib/store";
-import { setupFeeds, pollAllFeeds, pollOneFeed } from "../lib/feeds";
-import { setupQueues, queueStats } from "../lib/queues";
+import config from "./lib/config";
+import setupLog from "./lib/log";
+import Store from "./lib/store";
+import { setupFeeds, pollAllFeeds, pollOneFeed } from "./lib/feeds";
+import { setupQueues, queueStats } from "./lib/queues";
+import { setupThumbs, discoverThumbsForAllFeeds } from "./lib/thumbs";
 
-const { UPDATE_STATS_INTERVAL, FEED_POLL_INTERVAL } = config();
+const {
+  DEBUG,
+  UPDATE_STATS_INTERVAL,
+  FEED_POLL_INTERVAL,
+  DISCOVER_THUMB_INTERVAL,
+} = config();
 const log = setupLog("background");
 
 const ports = {
@@ -15,12 +21,18 @@ const ports = {
 async function init() {
   await setupQueues();
   await setupFeeds();
+  await setupThumbs();
 
   browser.runtime.onConnect.addListener(handleConnect);
   browser.browserAction.onClicked.addListener(handleBrowserAction);
 
   setInterval(updateStats, UPDATE_STATS_INTERVAL);
   setInterval(pollAllFeeds, FEED_POLL_INTERVAL);
+  setInterval(discoverThumbsForAllFeeds, DISCOVER_THUMB_INTERVAL);
+
+  if (DEBUG) {
+    openApp();
+  }
 }
 
 const postMessage = (port, type, data) => port.postMessage({ type, data });
@@ -42,29 +54,24 @@ async function handleBrowserAction() {
 async function openApp() {
   const pageURL = browser.runtime.getURL("/app/index.html");
 
-  // TODO: shouldn't getViews work for this?
-  // const windows = browser.extension.getViews({ type: "tab" });
   const windows = await browser.windows.getAll({
     populate: true,
     windowTypes: ["normal"],
   });
 
-  for (var win of windows) {
-    for (var tab of win.tabs) {
+  for (const win of windows) {
+    for (const tab of win.tabs) {
       if (pageURL === tab.url) {
-        log.debug("activating existing tab");
+        log.verbose("activating existing tab");
         browser.windows.update(win.id, { focused: true });
-        browser.tabs.update(tab.id, { active: true });
+        browser.tabs.update(tab.id, { active: true, pinned: true });
         return;
       }
     }
   }
 
-  log.debug("creating new tab");
-  browser.tabs.create({
-    active: true,
-    url: "/app/index.html",
-  });
+  log.verbose("creating new tab");
+  browser.tabs.create({ active: true, pinned: true, url: pageURL });
 }
 
 function handleConnect(port) {
@@ -90,6 +97,11 @@ async function handleMessage({ port, message }) {
     case "pollAllFeeds": {
       return pollAllFeeds();
     }
+
+    case "discoverThumbsForAllFeeds": {
+      return discoverThumbsForAllFeeds();
+    }
+
     case "foundFeeds": {
       const feeds = data;
       browser.pageAction.show(id);
@@ -111,6 +123,7 @@ async function handleMessage({ port, message }) {
       }
       return;
     }
+
     default: {
       log.debug("unknown message", message);
     }

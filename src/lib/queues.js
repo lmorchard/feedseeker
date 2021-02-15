@@ -57,38 +57,40 @@ export class InMemorySource {
   }
 }
 
+const noop = () => {};
+
 export class QueueRunner {
   constructor({
     concurrency = 1,
     autoStart = true,
-    source,
-    onTask = null,
-    onResolve = null,
-    onReject = null,
-    onEmpty = null,
-    onDone = null,
+    source = new InMemorySource(),
+    onPush = noop,
+    onTask = noop,
+    onResolve = noop,
+    onReject = noop,
+    onEmpty = noop,
+    onDone = noop,
   }) {
     Object.assign(this, {
       concurrency,
       autoStart,
-      source: source || new InMemorySource(),
+      onPush,
+      onTask,
+      onResolve,
+      onReject,
+      onEmpty,
+      onDone,
+      source,
       nextTaskId: 0,
       isRunning: false,
-      isDone: false,
       pendingTasks: {},
-      onTask: onTask ? onTask : (task) => task,
-      onResolve: onResolve ? onResolve : () => {},
-      onReject: onReject ? onReject : () => {},
-      onEmpty: onEmpty ? onEmpty : () => {},
-      onDone: onDone ? onDone : () => {},
     });
   }
 
   async start() {
     log.trace("start");
-    this.isDone = false;
     this.isRunning = true;
-    this.next();
+    setTimeout(() => this.next(), 0.1);
   }
 
   pause() {
@@ -103,6 +105,7 @@ export class QueueRunner {
   async push(task) {
     log.trace("push", task);
     this.source.push(task);
+    this.onPush(task);
     if (this.autoStart) {
       setTimeout(() => {
         if (!this.isRunning) {
@@ -140,7 +143,7 @@ export class QueueRunner {
 
       const complete = (cb) => (result) => {
         delete this.pendingTasks[taskId];
-        this.next();
+        setTimeout(() => this.next(), 0.1);
         cb(result, task, taskId);
       };
 

@@ -15,14 +15,14 @@ export default [
     },
   },
   {
-    input: "src/background/index.js",
+    input: "src/background.js",
     output: {
       file: "build/background.js",
       format: "iife",
     },
   },
   {
-    input: "src/contentScript/index.js",
+    input: "src/contentScript.js",
     output: {
       file: "build/contentScript.js",
       format: "iife",

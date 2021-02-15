@@ -1,0 +1,261 @@
+body {
+  background-color: #eee;
+  font-family: sans-serif;
+  font-size: 14px;
+  padding: 1em 1em 1em 1em;
+  margin: 0.5em;
+}
+
+.topnav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  width: 100%;
+
+  padding: 0.5em 1.5em;
+  background-color: #fff;
+  border: 1px solid #aaa;
+  height: 2em;
+  box-shadow: 0px 4px 3px rgba(0, 0, 0, 0.4);
+}
+
+.folder-menu-control {
+  background-image: url(./images/menu.svg);
+  background-repeat: no-repeat;
+  display: block;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+  text-indent: 10em;
+}
+
+.folder-menu {
+  display: none;
+  position: fixed;
+  min-height: 32px;
+  left: 0;
+  top: 3em;
+  padding: 1.5em 2.5em;
+  background-color: #fff;
+  box-shadow: 0px 4px 3px rgba(0, 0, 0, 0.4);
+  width: 20em;
+}
+
+.folder-menu ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+
+.folder-menu ul li a {
+  display: block;
+  margin: 0.5em;
+  line-height: 2em;
+}
+
+#folder-menu-toggle {
+  display: none;
+}
+#folder-menu-toggle:checked ~ .folder-menu {
+  display: block;
+}
+
+.feeds {
+  margin: 0;
+  padding: 0;
+}
+
+.feeds .feed {
+  list-style-type: none;
+  margin-bottom: 1em;
+}
+
+.feed > .title,
+.feed > details > summary {
+  display: block;
+  position: sticky;
+  top: 01px;
+  z-index: 20;
+  font-size: 1.5em;
+  padding: 0.5em 1em;
+  margin: 0 0 1em 0;
+  background-color: #fff;
+  border: 1px solid #aaa;
+  box-shadow: 4px 4px 3px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
+
+.feed .feeddate {
+  position: absolute;
+  right: 1.25em;
+}
+
+.feeditems {
+  margin: 0;
+  padding: 0;
+  margin-top: 1em;
+  margin-bottom: 2em;
+  margin-right: -1.25em;
+
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.feeditems .feeditem {
+  position: relative;
+  padding-bottom: 2.5em;
+  margin-bottom: 1em;
+  list-style-type: none;
+  background-color: #fff;
+  border: 1px solid #aaa;
+  box-shadow: 4px 4px 3px rgba(0, 0, 0, 0.4);
+
+  background-repeat: no-repeat;
+  background-size: 100%;
+
+  flex-grow: 1;
+  margin-right: 1.25em;
+
+  flex-basis: calc(100% / 5);
+  max-width: calc(100vw / 5 - 2em);
+}
+
+.feeditems .next-feed-page {
+  display: table;
+  width: 100%;
+  border: 1px solid #ccc;
+  box-shadow: 4px 4px 3px rgba(0, 0, 0, 0.4);
+}
+.feeditems .next-feed-page a {
+  display: block;
+  padding: 0.5em 1em;
+  font-size: 1.25em;
+  font-weight: bold;
+  text-align: center;
+  background-color: rgba(255, 255, 255, 1);
+  text-decoration: none;
+}
+.feeditems .next-feed-page a:hover {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+.feeditems .next-feed-page.loading a {
+  opacity: 0.5;
+}
+
+.feeditem summary {
+  position: relative;
+}
+
+.feeditem.feeditem.has-thumb summary {
+  min-height: 6em;
+}
+
+.feeditem .thumb {
+  display: block;
+  max-height: 20em;
+  overflow: hidden;
+}
+
+.feeditem .thumb img {
+  max-width: 100%;
+}
+
+.feeditem .title {
+  width: calc(100% - 2em);
+  padding: 0.5em 1em;
+  display: block;
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.5);
+  overflow-wrap: break-word;
+  text-decoration: none;
+  color: rgba(0, 0, 0, 1.0);
+}
+
+.feeditem.has-thumb summary .title {
+  position: absolute;
+  bottom: 0;
+  padding: 1em;
+  color: rgba(255,255,255, 1.0);
+  background-color: rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 2px #000;
+}
+
+.feeditem .text {
+  padding: 1em 1em;
+  display: block;
+  margin-bottom: 0.25em;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.feeditem .author {
+  display: block;
+  position: absolute;
+  right: 1.25em;
+  bottom: 0.75em;
+}
+
+.feeditem .date {
+  display: block;
+  position: absolute;
+  left: 1.25em;
+  bottom: 0.75em;
+}
+
+@media screen and (max-width: 1600px) {
+  .feeditems .feeditem {
+    flex-basis: calc(100% / 4);
+    max-width: calc(100vw / 4 - 2.125em);
+  }
+}
+
+@media screen and (max-width: 1280px) {
+  .feeditems .feeditem {
+    flex-basis: calc(100% / 3);
+    max-width: calc(100vw / 3 - 2.5em);
+  }
+}
+
+@media screen and (max-width: 800px) {
+  body {
+    font-size: 16px;
+  }
+  .folder-menu {
+    width: 100%;
+  }
+  .feed > .title,
+  .feed > details > summary {
+    font-size: 1.125em;
+    font-weight: bold;
+  }
+  .feeditems .next-feed-page a {
+    font-size: 1em;
+  }
+  .feeditems .feeditem {
+    flex-basis: calc(100% / 2);
+    max-width: calc(100vw / 2 - 3em);
+  }
+  .feed .feeddate {
+    position: inherit;
+    right: inherit;
+  }
+}
+
+@media screen and (max-width: 640px) {
+  body {
+    font-size: 16px;
+  }
+  .feeditems {
+    display: block;
+    margin-right: 0;
+  }
+  .feeditems .feeditem {
+    display: block;
+    width: 100%;
+    flex-basis: inherit;
+    max-width: inherit;
+  }
+}

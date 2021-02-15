@@ -1,6 +1,6 @@
-import getConfig from "./config";
+import config from "./config";
 
-const config = getConfig();
+const { APP_NAME, LOG_LEVEL } = config();
 
 export const logLevels = {
   quiet: [0, null],
@@ -14,9 +14,9 @@ export const logLevels = {
 
 const noop = () => {};
 
-export default function (name, maxLevelName = config.LOG_LEVEL) {
+export default function (name, maxLevelName = LOG_LEVEL) {
   const maxLevel = logLevels[maxLevelName][0];
-  const logPrefix = `[feedseeker ${name}]`;
+  const logPrefix = `[${APP_NAME} ${name}]`;
   const log = (...args) => console.log(logPrefix, ...args);
   Object.entries(logLevels).forEach(([levelName, [level, consoleMethod]]) => {
     log[levelName] =

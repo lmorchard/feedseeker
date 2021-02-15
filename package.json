@@ -44,10 +44,7 @@
     "overrides": [
       {
         "files": [
-          "src/background/**/*.js",
-          "src/contentScript/**/*.js",
-          "src/app/**/*.js",
-          "src/lib/**/*.js"
+          "src/**/*.js"
         ],
         "globals": {
           "browser": true

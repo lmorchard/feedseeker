@@ -1,5 +1,5 @@
-import setupLog from "../lib/log";
-import { findFeeds } from "../lib/feeds";
+import setupLog from "./lib/log";
+import { findFeeds } from "./lib/feeds";
 
 const log = setupLog("contentScript");
 const { runtime } = browser;
