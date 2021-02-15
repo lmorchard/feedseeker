@@ -52,7 +52,9 @@ export async function fetchFeed(feed) {
 export async function pollAllFeeds() {
   log.trace("pollAllFeeds");
   const feedIDs = await Store.getFeedIDs();
+  const ignoredFeedIDs = await Store.getIgnoredFeedIDs();
   for (const feedID of feedIDs) {
+    if (ignoredFeedIDs.includes(feedID)) continue;
     queues.feedPollQueue.push(feedID);
   }
 }

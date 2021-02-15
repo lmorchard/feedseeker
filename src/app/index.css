@@ -6,59 +6,37 @@ body {
   margin: 0.5em;
 }
 
-.topnav {
+#app {
+  margin-top: 3em;
+}
+
+#app > header {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 10;
+  height: 3em;
   width: 100%;
-
-  padding: 0.5em 1.5em;
   background-color: #fff;
   border: 1px solid #aaa;
-  height: 2em;
-  box-shadow: 0px 4px 3px rgba(0, 0, 0, 0.4);
+  box-shadow: 4px 4px 3px rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.folder-menu-control {
-  background-image: url(./images/menu.svg);
-  background-repeat: no-repeat;
-  display: block;
-  width: 32px;
-  height: 32px;
-  overflow: hidden;
-  text-indent: 10em;
-}
-
-.folder-menu {
-  display: none;
-  position: fixed;
-  min-height: 32px;
-  left: 0;
-  top: 3em;
-  padding: 1.5em 2.5em;
-  background-color: #fff;
-  box-shadow: 0px 4px 3px rgba(0, 0, 0, 0.4);
-  width: 20em;
-}
-
-.folder-menu ul {
-  margin: 0;
+#app > header h1 {
+  margin: 0 1em;
   padding: 0;
-  list-style-type: none;
+  font-size: 1.25em;
 }
 
-.folder-menu ul li a {
-  display: block;
-  margin: 0.5em;
-  line-height: 2em;
-}
-
-#folder-menu-toggle {
-  display: none;
-}
-#folder-menu-toggle:checked ~ .folder-menu {
-  display: block;
+#app > header nav {
+  margin: 0 1em;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
 }
 
 .feeds {

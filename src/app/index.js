@@ -2,9 +2,11 @@ import { html, render } from "htm/preact";
 
 import setupLog from "../lib/log";
 import Store from "../lib/store";
+import config from "../lib/config";
 import App from "./components/App";
 
 const log = setupLog("app");
+const { DISPLAY_MAX_AGE } = config();
 
 let port;
 let appProps = {};
@@ -23,12 +25,18 @@ async function updateAll() {
   const feedIDs = await Store.getFeedIDs();
   const ignoredFeedIDs = await Store.getIgnoredFeedIDs();
 
+  const minDisplayTime = Date.now() - DISPLAY_MAX_AGE;
+
   const items = [];
   for (const feedID of feedIDs) {
     if (ignoredFeedIDs.includes(feedID)) continue;
     const feed = await Store.getFeed(feedID);
     if (feed.items) {
-      items.push(...feed.items.map((item) => ({ ...item, feed })));
+      for (const item of feed.items) {
+        const itemTime = new Date(item.isoDate).getTime();
+        if (itemTime < minDisplayTime) continue;
+        items.push({ ...item, feed });
+      }
     }
   }
   updateApp({ feedIDs, items });

@@ -11,11 +11,24 @@ export const App = ({ stats = {}, items = [], postMessage }) => {
     b.isoDate.localeCompare(a.isoDate)
   );
 
+  const formatStatus = (statItem) =>
+    statItem.isRunning ? `${statItem.pending} / ${statItem.size}` : "idle";
+
+  const feedsStatus = formatStatus(stats.feedPollQueue);
+  const thumbsStatus = formatStatus(stats.discoverThumbQueue);
+
   return html`
     <${LazyLoadManager}>
-      <pre>${JSON.stringify(stats)}</pre>
-      <button onClick=${pollAllFeeds}>Poll all feeds</button>
-      <button onClick=${discoverThumbsForAllFeeds}>Discover thumbs</button>
+      <header>
+        <h1>FeedSeeker</h1>
+        <nav>
+          <button onClick=${pollAllFeeds}>Feeds (${feedsStatus})</button>
+          <button onClick=${discoverThumbsForAllFeeds}>
+            Thumbs (${thumbsStatus})
+          </button>
+        </nav>
+      </header>
+
       <ul className="feeditems">
         ${itemsSorted.map(
           (item, idx) => html`

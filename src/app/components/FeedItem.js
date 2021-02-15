@@ -33,13 +33,10 @@ export const FeedItem = ({ item, feed }) => {
     [setShowOptions]
   );
 
-  const addIgnoredFeedID = useCallback(
-    async () => {
-      setShowOptions(false);
-      await Store.addIgnoredFeedID(feedID);
-    },
-    [feedID]
-  );
+  const addIgnoredFeedID = useCallback(async () => {
+    setShowOptions(false);
+    await Store.addIgnoredFeedID(feedID);
+  }, [feedID]);
 
   return html`
     <li class="feeditem${!thumbUrl ? "" : " has-thumb"}">
@@ -68,9 +65,9 @@ export const FeedItem = ({ item, feed }) => {
       ${author && html` <span class="author">${author}</span> `}
 
       <div class="date">
-        <a class="datelink" datetime="${date}" target="_blank" href=${link}
-          ><${TimeAgo} datetime=${date}
-        /></a>
+        <a class="datelink" datetime="${date}" target="_blank" href=${link}>
+          <${TimeAgo} datetime=${date} />
+        </a>
       </div>
 
       <div class="source">
