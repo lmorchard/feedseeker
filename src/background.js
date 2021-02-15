@@ -1,9 +1,9 @@
 import config from "./lib/config";
 import setupLog from "./lib/log";
-import Store from "./lib/store";
-import { setupFeeds, pollAllFeeds, pollOneFeed } from "./lib/feeds";
+import { setupFeeds, pollAllFeeds, followFeed } from "./lib/feeds";
 import { setupQueues, queueStats } from "./lib/queues";
 import { setupThumbs, discoverThumbsForAllFeeds } from "./lib/thumbs";
+import Store from "./lib/store";
 
 const {
   DEBUG,
@@ -11,6 +11,9 @@ const {
   FEED_POLL_INTERVAL,
   DISCOVER_THUMB_INTERVAL,
 } = config();
+
+const MENU_FOLLOW_LINK_ID = "followFeedLink";
+
 const log = setupLog("background");
 
 const ports = {
@@ -23,6 +26,16 @@ async function init() {
   await setupFeeds();
   await setupThumbs();
 
+  browser.menus.create({
+    id: MENU_FOLLOW_LINK_ID,
+    title: "Follow Link in FeedSeeker",
+    contexts: ["link"],
+    icons: {
+      16: "images/logo.svg",
+    },
+  });
+
+  browser.menus.onClicked.addListener(handleMenu);
   browser.runtime.onConnect.addListener(handleConnect);
   browser.browserAction.onClicked.addListener(handleBrowserAction);
 
@@ -51,6 +64,22 @@ async function handleBrowserAction() {
   openApp();
 }
 
+async function handleMenu(onClickData) {
+  const { menuItemId } = onClickData;
+  switch (menuItemId) {
+    case MENU_FOLLOW_LINK_ID: {
+      const { linkUrl, linkText, pageUrl } = onClickData;
+      const feed = {
+        sourceUrl: pageUrl,
+        title: linkText,
+        href: linkUrl,
+      };
+      log.debug("follow link as feed", feed);
+      await followFeed(feed);
+    }
+  }
+}
+
 async function openApp() {
   const pageURL = browser.runtime.getURL("/app/index.html");
 
@@ -74,7 +103,7 @@ async function openApp() {
   browser.tabs.create({ active: true, pinned: true, url: pageURL });
 }
 
-function handleConnect(port) {
+async function handleConnect(port) {
   const id = port.sender.tab.id;
 
   log.trace("port connected", port.name, id);
@@ -103,8 +132,23 @@ async function handleMessage({ port, message }) {
     }
 
     case "foundFeeds": {
-      const feeds = data;
-      browser.pageAction.show(id);
+      const foundFeeds = data;
+      const ignoredFeedIDs = await Store.getIgnoredFeedIDs();
+
+      const feeds = [];
+      for (let foundFeed of foundFeeds) {
+        const feedID = await Store.feedToID(foundFeed);
+        if (!ignoredFeedIDs.includes(feedID)) {
+          feeds.push(foundFeed);
+        }
+      }
+
+      for (let feed of feeds) {
+        log.info("Found feed", feed);
+        followFeed(feed);
+      }
+
+      // browser.pageAction.show(id);
       browser.browserAction.setBadgeBackgroundColor({
         color: "#88ff88",
         tabId: id,
@@ -113,14 +157,6 @@ async function handleMessage({ port, message }) {
         text: "" + feeds.length,
         tabId: id,
       });
-      for (let feed of feeds) {
-        log.info("Found feed", feed);
-        await Store.updateFeed(feed, (update) => ({
-          ...update,
-          seenCount: (update.seenCount || 0) + 1,
-        }));
-        await pollOneFeed(feed);
-      }
       return;
     }
 

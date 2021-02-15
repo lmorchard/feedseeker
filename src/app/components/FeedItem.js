@@ -1,30 +1,33 @@
 import { html } from "htm/preact";
 import { LazyLoadImage } from "./LazyLoad";
 import { useState, useCallback } from "preact/hooks";
-import { format as timeagoFormat } from 'timeago.js';
+import { format as timeagoFormat } from "timeago.js";
 
+import { getItemTime } from "../../lib/feeds";
 import Store from "../../lib/store";
 
 export const FeedItem = ({ item, feed }) => {
   const { id: feedID, title: feedTitle, link: feedLink } = feed;
 
   const {
+    id,
     link,
     title,
     author,
-    isoDate: date,
     contentSnippet: text,
     thumbUrl,
-    isNew,
-    isDefunct,
+    // isNew,
+    // isDefunct,
   } = item;
+
+  const itemTime = getItemTime(item);
 
   let feedHostname;
   try {
     const feedUrl = new URL(feedLink);
     feedHostname = feedUrl.hostname;
   } catch (e) {
-    console.log("Bad feed link for", feed.title);
+    /* no-op */
   }
 
   const [showOptions, setShowOptions] = useState(false);
@@ -39,14 +42,15 @@ export const FeedItem = ({ item, feed }) => {
   }, [feedID]);
 
   return html`
-    <li class="feeditem${!thumbUrl ? "" : " has-thumb"}">
+    <li id="item-${id}" class="feeditem${!thumbUrl ? "" : " has-thumb"}">
       <summary>
-        ${!!thumbUrl &&
-        html`
-          <a target="_blank" class="thumb" href=${link}>
-            <${LazyLoadImage} src="${thumbUrl}" />
-          </a>
-        `}
+        ${!thumbUrl
+          ? ""
+          : html`
+              <a target="_blank" class="thumb" href=${link}>
+                <${LazyLoadImage} src="${thumbUrl}" />
+              </a>
+            `}
         ${title &&
         html`<a class="title" target="_blank" href=${link}>${title}</a>`}
         <button class="options" onClick=${toggleOptions}>...</button>
@@ -57,7 +61,6 @@ export const FeedItem = ({ item, feed }) => {
         html`
           <span class="text">
             ${text.length < 160 ? text : text.substr(0, 160) + "[...]"}
-            ${isNew ? "(NEW)" : ""} ${isDefunct ? "(DEFUNCT)" : ""}
           </span>
         `}
       </div>
@@ -65,8 +68,8 @@ export const FeedItem = ({ item, feed }) => {
       ${author && html` <span class="author">${author}</span> `}
 
       <div class="date">
-        <a class="datelink" datetime="${date}" target="_blank" href=${link}>
-          ${timeagoFormat(date)}
+        <a class="datelink" target="_blank" href=${link}>
+          ${timeagoFormat(itemTime)}
         </a>
       </div>
 

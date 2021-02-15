@@ -138,6 +138,9 @@ body {
   max-width: calc(100vw / 5 - 2em);
 }
 
+.feeditems .feeditem.has-thumb {
+}
+
 .feeditem summary {
   position: relative;
 }
@@ -156,9 +159,9 @@ body {
   max-width: 100%;
 }
 
-.feeditem  .title {
+.feeditem .title {
   width: calc(100% - 2em);
-  padding: 2.5em 1em 1em 1em;
+  padding: 2.5em 1em 0em 1em;
   display: block;
   font-weight: 600;
   background-color: rgba(255, 255, 255, 0.5);
@@ -177,10 +180,13 @@ body {
 }
 
 .feeditem .text {
-  padding: 1em 1em;
+  padding: 2em 1em 1em 1em;
   display: block;
   margin-bottom: 0.25em;
   background-color: rgba(255, 255, 255, 0.3);
+}
+.feeditem.has-thumb .text {
+  padding: 1em 1em 1em 1em;
 }
 
 .feeditem .author {

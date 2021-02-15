@@ -61,6 +61,11 @@ export async function discoverThumbsForAllFeeds() {
 
 export async function discoverThumbsForFeed(feedID) {
   const feed = await Store.getFeed(feedID);
+  if (!feed) {
+    log.error("No such feed for ID", feedID);
+    return;
+  }
+  
   if (!feed.items) return;
   let feedChanged = false;
   const newItems = [];

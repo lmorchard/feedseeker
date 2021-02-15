@@ -22,7 +22,7 @@
     "watch:manifest": "onchange -vi \"package.json\" -- npm run build:manifest",
     "build:rollup": "rollup -c",
     "watch:rollup": "rollup -c --watch --no-watch.clearScreen",
-    "build:vendor": "mkdir -p build/vendor; cp node_modules/rss-parser/dist/rss-parser.min.js build/vendor",
+    "build:vendor": "mkdir -p build/vendor; cp node_modules/rss-parser/dist/rss-parser.min.* build/vendor",
     "watch:vendor": "onchange -vi \"package.json\" -- npm run build:vendor",
     "build:appAssets": "mkdir -p build/app; cp src/app/*.html src/app/*.css build/app/",
     "watch:appAssets": "onchange -vi \"src/app/*.{html,css}\" -- npm run build:appAssets"
@@ -59,7 +59,8 @@
       "storage",
       "unlimitedStorage",
       "tabs",
-      "history"
+      "history",
+      "menus"
     ],
     "icons": {
       "32": "images/logo.svg",
@@ -106,6 +107,7 @@
     }
   },
   "dependencies": {
+    "classnames": "^2.2.6",
     "htm": "^3.0.4",
     "preact": "^10.5.12",
     "rss-parser": "^3.11.0",

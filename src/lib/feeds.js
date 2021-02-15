@@ -27,18 +27,72 @@ export async function setupFeeds() {
 
 // TODO: Refine this naive feed discovery.
 // Maybe also detect whether the current document is a feed and just use sourceUrl
-// Could be nice to peek through all links on the page for anything that sounds like RSS
-export const findFeeds = (sourceUrl, sourceTitle, document) =>
-  Array.from(
+// Also, these are terrible REs but they seem to catch interesting things
+const feedLinkHrefRE = new RegExp(/feed(?!back)|rss|atom|xml/, "i");
+const feedLinkTitleRE = new RegExp(/feed(?!back)|rss|atom|xml/, "i");
+export function findFeeds(sourceUrl, sourceTitle, document) {
+  const fromDocHead = Array.from(
     document.head.querySelectorAll(
       'link[type*="rss"], link[type*="atom"], link[type*="rdf"]'
     )
   ).map((link) => ({
-    sourceUrl,
-    sourceTitle,
     title: link.getAttribute("title"),
     href: new URL(link.getAttribute("href"), sourceUrl).toString(),
   }));
+
+  const fromLinks = [];
+  const allLinks = Array.from(document.body.querySelectorAll("a"));
+  for (const link of allLinks) {
+    const href = link.getAttribute("href");
+    if (!href) continue;
+
+    const title = link.getAttribute("title") || link.textContent;
+
+    if (feedLinkHrefRE.test(href) || feedLinkTitleRE.test(title)) {
+      fromLinks.push({
+        title: link.getAttribute("title") || link.textContent,
+        href: new URL(link.getAttribute("href"), sourceUrl).toString(),
+      });
+    }
+  }
+
+  // Annotate all the candidates with the current source page URL & title
+  const links = [...fromDocHead, ...fromLinks].map((link) => ({
+    ...link,
+    sourceUrl,
+    sourceTitle,
+  }));
+
+  // Reduce down to unique href feeds discovered
+  return links.filter((e, i) => links.findIndex((a) => a.href === e.href) == i);
+}
+
+export async function followFeed(feed) {
+  log.trace("followFeed", feed);
+
+  const feedID = await Store.feedToID(feed);
+  const ignoredFeedIDs = await Store.getIgnoredFeedIDs();
+  if (ignoredFeedIDs.includes(feedID)) {
+    log.verbose("ignoring follow for feed", feed);
+    return;
+  }
+
+  // Try fetching & parsing the feed - ignore if we fail.
+  try {
+    await fetchFeed(feed);
+  } catch (error) {
+    await Store.addIgnoredFeedID(feedID);
+    log.error("failed to follow feed - ignoring", feedID, feed, error);
+    return;
+  }
+
+  await Store.updateFeed(feed, (update) => ({
+    ...update,
+    followedAt: update.followedAt || new Date().toISOString(),
+    seenCount: (update.seenCount || 0) + 1,
+  }));
+  await pollOneFeed(feedID);
+}
 
 export async function fetchFeed(feed) {
   log.trace("fetchFeed", feed.href);
@@ -63,7 +117,14 @@ export async function pollOneFeed(feedID) {
   log.trace("pollOneFeed", feedID);
 
   const feed = await Store.getFeed(feedID);
+  if (!feed) {
+    log.error("No such feed for ID", feedID);
+    return;
+  }
+
   const fetchedFeed = await fetchFeed(feed);
+
+  const timeNow = new Date().toISOString();
 
   const existingItems = await annotateItemsWithIDs(feed.items);
   const existingIDs = new Set(existingItems.map((item) => item.id));
@@ -71,9 +132,16 @@ export async function pollOneFeed(feedID) {
   const fetchedItems = await annotateItemsWithIDs(fetchedFeed.items);
   const fetchedIDs = new Set(fetchedItems.map((item) => item.id));
 
-  const newItems = fetchedItems.filter((item) => !existingIDs.has(item.id));
+  const newItems = fetchedItems
+    .filter((item) => !existingIDs.has(item.id))
+    .map((item) => ({
+      ...item,
+      firstSeenDate: item.firstSeenDate || timeNow,
+    }));
   const newIDs = new Set(newItems.map((item) => item.id));
 
+  // defunct items are items we saw in the past but are no longer in the feed
+  // TODO: eventually expire these from the store
   const defunctItems = existingItems.filter((item) => !fetchedIDs.has(item.id));
   const defunctIDs = new Set(defunctItems.map((item) => item.id));
 
@@ -81,13 +149,16 @@ export async function pollOneFeed(feedID) {
     ...item,
     isNew: newIDs.has(item.id),
     isDefunct: defunctIDs.has(item.id),
+    defunctSince: defunctIDs.has(item.id) ? item.defunctSince || timeNow : null,
   }));
 
   await Store.updateFeed(feed, (update) => ({
     ...update,
     ...fetchedFeed,
-    fetchedCount: (update.fetchedCount || 0) + 1,
     items: mergedItems,
+    fetchedCount: (update.fetchedCount || 0) + 1,
+    lastFetchedAt: timeNow,
+    lastNewAt: newItems.length ? timeNow : feed.lastNewDate,
   }));
 
   queues.discoverThumbQueue.push(feedID);
@@ -99,7 +170,16 @@ const itemID = async ({ title, link, guid }) =>
 async function annotateItemsWithIDs(items = []) {
   const out = [];
   for (const item of items) {
-    out.push({ ...item, id: await itemID(item)})
+    out.push({ ...item, id: await itemID(item) });
   }
   return out;
+}
+
+export function getItemTime(item) {
+  // HACK: some feeds seem to have dates in the future, so try to constrain
+  // that to the time we first saw the item instead.
+  const { firstSeenDate, isoDate } = item;
+  return new Date(
+    !isoDate || isoDate > firstSeenDate ? firstSeenDate : isoDate
+  ).getTime();
 }

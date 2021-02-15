@@ -3,6 +3,7 @@ import { html, render } from "htm/preact";
 import setupLog from "../lib/log";
 import Store from "../lib/store";
 import config from "../lib/config";
+import { getItemTime } from "../lib/feeds";
 import App from "./components/App";
 
 const log = setupLog("app");
@@ -31,10 +32,14 @@ async function updateAll() {
   for (const feedID of feedIDs) {
     if (ignoredFeedIDs.includes(feedID)) continue;
     const feed = await Store.getFeed(feedID);
+    if (!feed) {
+      log.error("No such feed for ID", feedID);
+      continue;
+    }
+
     if (feed.items) {
       for (const item of feed.items) {
-        const itemTime = new Date(item.isoDate).getTime();
-        if (itemTime < minDisplayTime) continue;
+        if (getItemTime(item) < minDisplayTime) continue;
         items.push({ ...item, feed });
       }
     }

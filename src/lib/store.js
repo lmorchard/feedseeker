@@ -13,8 +13,7 @@ const get = async (id, defval) => {
   return v[toStoreId(id)] || defval;
 };
 
-const set = async (id, value) =>
-  storage.set({ [toStoreId(id)]: value });
+const set = async (id, value) => storage.set({ [toStoreId(id)]: value });
 
 export const Store = {
   async init() {},
@@ -58,12 +57,23 @@ export const Store = {
 
   async addIgnoredFeedID(feedID) {
     const ignoredFeedIDs = await this.getIgnoredFeedIDs();
-    return set("ignoredFeedIDs", [ ...ignoredFeedIDs, feedID ]);
+    const feed = await this.getFeed(feedID);
+    if (feed) {
+      this.updateFeed(feed, (update) => ({ ...update, ignored: true }));
+    }
+    return set("ignoredFeedIDs", [...ignoredFeedIDs, feedID]);
   },
 
   async removeIgnoredFeedID(feedID) {
     const ignoredFeedIDs = await this.getIgnoredFeedIDs();
-    return set("ignoredFeedIDs", ignoredFeedIDs.filter(id => id !== feedID));
+    const feed = await this.getFeed(feedID);
+    if (feed) {
+      this.updateFeed(feed, (update) => ({ ...update, ignored: false }));
+    }
+    return set(
+      "ignoredFeedIDs",
+      ignoredFeedIDs.filter((id) => id !== feedID)
+    );
   },
 };
 

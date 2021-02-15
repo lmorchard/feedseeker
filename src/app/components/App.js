@@ -1,5 +1,6 @@
 import { html } from "htm/preact";
 import { hslToRgb } from "../../lib/hslToRgb";
+import { getItemTime } from "../../lib/feeds";
 import FeedItem from "./FeedItem";
 import { LazyLoadManager } from "./LazyLoad";
 
@@ -8,9 +9,7 @@ export const App = ({ stats = {}, items = [], postMessage }) => {
   const discoverThumbsForAllFeeds = () =>
     postMessage("discoverThumbsForAllFeeds");
 
-  const itemsSorted = [...items].sort((a, b) =>
-    b.isoDate.localeCompare(a.isoDate)
-  );
+  const itemsSorted = [...items].sort((a, b) => getItemTime(b) - getItemTime(a));
 
   const formatStatus = ({ isRunning, pending, size } = {}) =>
     isRunning ? `${pending} / ${size}` : "idle";
