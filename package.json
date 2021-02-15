@@ -109,7 +109,7 @@
     "htm": "^3.0.4",
     "preact": "^10.5.12",
     "rss-parser": "^3.11.0",
-    "timeago-react": "^3.0.2"
+    "timeago.js": "^4.0.2"
   },
   "devDependencies": {
     "@rollup/plugin-alias": "^3.1.2",

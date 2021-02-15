@@ -1,7 +1,7 @@
 import { html } from "htm/preact";
 import { LazyLoadImage } from "./LazyLoad";
-import TimeAgo from "timeago-react";
 import { useState, useCallback } from "preact/hooks";
+import { format as timeagoFormat } from 'timeago.js';
 
 import Store from "../../lib/store";
 
@@ -66,7 +66,7 @@ export const FeedItem = ({ item, feed }) => {
 
       <div class="date">
         <a class="datelink" datetime="${date}" target="_blank" href=${link}>
-          <${TimeAgo} datetime=${date} />
+          ${timeagoFormat(date)}
         </a>
       </div>
 

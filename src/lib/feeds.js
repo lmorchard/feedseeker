@@ -96,7 +96,7 @@ export async function pollOneFeed(feedID) {
 const itemID = async ({ title, link, guid }) =>
   hashStringAsID(`${title}|${link}|${guid}`);
 
-async function annotateItemsWithIDs(items) {
+async function annotateItemsWithIDs(items = []) {
   const out = [];
   for (const item of items) {
     out.push({ ...item, id: await itemID(item)})

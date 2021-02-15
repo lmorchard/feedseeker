@@ -39,6 +39,20 @@ body {
   align-items: flex-end;
 }
 
+#app > header nav button {
+  border: none;
+  cursor: pointer;
+  margin: 0 0.25em;
+  padding: 0.5em 0.75em;
+  color: rgba(255,255,255, 1.0);
+  background-color: rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 2px #000;  
+}
+
+#app > header nav button:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
 .feeds {
   margin: 0;
   padding: 0;

@@ -1,4 +1,5 @@
 import { html } from "htm/preact";
+import { hslToRgb } from "../../lib/hslToRgb";
 import FeedItem from "./FeedItem";
 import { LazyLoadManager } from "./LazyLoad";
 
@@ -11,16 +12,25 @@ export const App = ({ stats = {}, items = [], postMessage }) => {
     b.isoDate.localeCompare(a.isoDate)
   );
 
-  const formatStatus = (statItem) =>
-    statItem.isRunning ? `${statItem.pending} / ${statItem.size}` : "idle";
+  const formatStatus = ({ isRunning, pending, size } = {}) =>
+    isRunning ? `${pending} / ${size}` : "idle";
 
-  const feedsStatus = formatStatus(stats.feedPollQueue);
-  const thumbsStatus = formatStatus(stats.discoverThumbQueue);
+  const timeStats = stats.time || Date.now();
+  const queueStats = stats.queue || {};
+  const feedsStatus = formatStatus(queueStats.feedPollQueue);
+  const thumbsStatus = formatStatus(queueStats.discoverThumbQueue);
+
+  const HB_COLOR_CYCLE_INTERVAL = 5000;
+  const [hbR, hbG, hbB] = hslToRgb(
+    (timeStats % HB_COLOR_CYCLE_INTERVAL) / HB_COLOR_CYCLE_INTERVAL,
+    0.6,
+    0.3
+  );
 
   return html`
     <${LazyLoadManager}>
       <header>
-        <h1>FeedSeeker</h1>
+        <h1 style=${{ color: `rgb(${hbR}, ${hbG}, ${hbB})` }}>FeedSeeker</h1>
         <nav>
           <button onClick=${pollAllFeeds}>Feeds (${feedsStatus})</button>
           <button onClick=${discoverThumbsForAllFeeds}>
