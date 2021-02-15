@@ -15,24 +15,24 @@ async function init() {
   port = setupPort();
   log.debug("port connected", port);
 
-  browser.storage.onChanged.addListener(updateFeedIDs);
-  browser.storage.onChanged.addListener(updateFeedItems);
-
-  updateFeedIDs();
-  updateFeedItems();
+  browser.storage.onChanged.addListener(updateAll);
+  await updateAll();
 }
 
-const updateFeedItems = async () => {
-  const items = [];
+async function updateAll() {
   const feedIDs = await Store.getFeedIDs();
+  const ignoredFeedIDs = await Store.getIgnoredFeedIDs();
+
+  const items = [];
   for (const feedID of feedIDs) {
+    if (ignoredFeedIDs.includes(feedID)) continue;
     const feed = await Store.getFeed(feedID);
     if (feed.items) {
       items.push(...feed.items.map((item) => ({ ...item, feed })));
     }
   }
-  updateApp({ items });
-};
+  updateApp({ feedIDs, items });
+}
 
 const renderApp = () => {
   render(
@@ -64,10 +64,6 @@ async function handleMessage({ message }) {
       log.warn("Unimplemented message", message);
   }
 }
-
-const updateFeedIDs = async () => {
-  updateApp({ feedIDs: await Store.getFeedIDs() });
-};
 
 init()
   .then(() => log.info("READY."))

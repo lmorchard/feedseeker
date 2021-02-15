@@ -24,10 +24,7 @@ export const Store = {
   },
 
   async getFeedIDs() {
-    const ids = await get("feedIDs");
-    if (ids) return ids;
-    await set("feedIDs", []);
-    return [];
+    return get("feedIDs", []);
   },
 
   async indexFeedID(id) {
@@ -53,6 +50,20 @@ export const Store = {
     const updated = updater ? await updater(merged) : merged;
     await this.setFeed(id, updated);
     await this.indexFeedID(id);
+  },
+
+  async getIgnoredFeedIDs() {
+    return get("ignoredFeedIDs", []);
+  },
+
+  async addIgnoredFeedID(feedID) {
+    const ignoredFeedIDs = await this.getIgnoredFeedIDs();
+    return set("ignoredFeedIDs", [ ...ignoredFeedIDs, feedID ]);
+  },
+
+  async removeIgnoredFeedID(feedID) {
+    const ignoredFeedIDs = await this.getIgnoredFeedIDs();
+    return set("ignoredFeedIDs", ignoredFeedIDs.filter(id => id !== feedID));
   },
 };
 

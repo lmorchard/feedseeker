@@ -105,25 +105,6 @@ body {
   flex-wrap: wrap;
 }
 
-.feeditems .feeditem {
-  position: relative;
-  padding-bottom: 2.5em;
-  margin-bottom: 1em;
-  list-style-type: none;
-  background-color: #fff;
-  border: 1px solid #aaa;
-  box-shadow: 4px 4px 3px rgba(0, 0, 0, 0.4);
-
-  background-repeat: no-repeat;
-  background-size: 100%;
-
-  flex-grow: 1;
-  margin-right: 1.25em;
-
-  flex-basis: calc(100% / 5);
-  max-width: calc(100vw / 5 - 2em);
-}
-
 .feeditems .next-feed-page {
   display: table;
   width: 100%;
@@ -146,6 +127,25 @@ body {
   opacity: 0.5;
 }
 
+.feeditems .feeditem {
+  position: relative;
+  padding-bottom: 2em;
+  margin-bottom: 1em;
+  list-style-type: none;
+  background-color: #fff;
+  border: 1px solid #aaa;
+  box-shadow: 4px 4px 3px rgba(0, 0, 0, 0.4);
+
+  background-repeat: no-repeat;
+  background-size: 100%;
+
+  flex-grow: 1;
+  margin-right: 1.25em;
+
+  flex-basis: calc(100% / 5);
+  max-width: calc(100vw / 5 - 2em);
+}
+
 .feeditem summary {
   position: relative;
 }
@@ -164,9 +164,9 @@ body {
   max-width: 100%;
 }
 
-.feeditem .title {
+.feeditem  .title {
   width: calc(100% - 2em);
-  padding: 0.5em 1em;
+  padding: 2.5em 1em 1em 1em;
   display: block;
   font-weight: 600;
   background-color: rgba(255, 255, 255, 0.5);
@@ -177,8 +177,8 @@ body {
 
 .feeditem.has-thumb summary .title {
   position: absolute;
-  bottom: 0;
-  padding: 1em;
+  bottom: 0em;
+  padding: 0.5em 1em;
   color: rgba(255,255,255, 1.0);
   background-color: rgba(0, 0, 0, 0.5);
   text-shadow: 2px 2px 2px #000;
@@ -196,13 +196,126 @@ body {
   position: absolute;
   right: 1.25em;
   bottom: 0.75em;
+  font-size: 0.85em;
+  width: calc(33% - 2em);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .feeditem .date {
   display: block;
   position: absolute;
   left: 1.25em;
+  top: 0.75em;
+  font-size: 0.8em;
+}
+
+.feeditem .date a {
+  text-decoration: none;
+  color: rgba(0, 0, 0, 1.0);
+}
+
+.feeditem.has-thumb .date {
+  background-color: rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 2px #000;
+  left: 0;
+  top: 0;
+  padding: 0.5em 1.25em;
+}
+
+.feeditem.has-thumb .date a {
+  color: rgba(255,255,255, 1.0);
+}
+
+.feeditem .source {
+  display: block;
+  position: absolute;
+  left: 1.25em;
   bottom: 0.75em;
+  width: calc(66% - 2em);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.85em;
+}
+
+.feeditem .source .link {  
+  text-decoration: none;
+  color: rgba(0, 0, 0, 1.0);
+}
+
+.feeditem .source .icon {
+  margin-right: 0.5em;
+  vertical-align: text-bottom;
+}
+
+.feeditem button.options {
+  position: absolute;
+  right: 0;
+  top: 0;
+  border: none;
+  margin: 0;
+  padding: 0.5em 0.75em;
+  font-size: 0.8em;
+  cursor: pointer;
+  color: rgba(255,255,255, 1.0);
+  background-color: rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 2px #000;
+}
+
+.feeditem button.options:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+.feeditem .optionsPanel {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  padding: 1em;
+  color: rgba(255,255,255, 1.0);
+  background-color: rgba(0, 0, 0, 0.8);
+  text-shadow: 2px 2px 2px #000;
+}
+
+.feeditem .optionsPanel button {
+  border: none;
+  cursor: pointer;
+  margin: 0.5em 1.0em;
+  padding: 1em;
+  font-size: 0.8em;
+  cursor: pointer;
+  color: rgba(0, 0, 0, 1.0);
+  background-color: rgba(255, 255, 255, 0.8);
+  font-size: 0.85em;
+}
+
+.feeditem .optionsPanel button:hover {
+  background-color: rgba(255, 255, 255, 1.0);
+}
+
+.feeditem .optionsPanel button.optionsClose {
+  position: absolute;
+  right: 0;
+  top: 0;
+  border: none;
+  margin: 0;
+  padding: 0.5em 0.75em;
+  font-size: 0.8em;
+  cursor: pointer;
+  color: rgba(0, 0, 0, 1.0);
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.feeditem .optionsPanel button.optionsClose:hover {
+  background-color: rgba(255, 255, 255, 1.0);
 }
 
 @media screen and (max-width: 1600px) {

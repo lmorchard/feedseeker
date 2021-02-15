@@ -1,4 +1,5 @@
 import { html } from "htm/preact";
+import { createContext } from "preact";
 import {
   useState,
   useContext,
@@ -6,7 +7,6 @@ import {
   useEffect,
   useCallback,
 } from "preact/hooks";
-import { createContext } from "preact";
 
 const LAZY_LOAD_THRESHOLD = 0.1;
 
@@ -48,7 +48,7 @@ export const LazyLoadManager = ({ children }) => {
   return html` <${LazyLoadContext.Provider} value=${toLoad}> ${children} <//> `;
 };
 
-export const LazyLoadImage = ({ src, class: className, ...imgProps }) => {
+export const LazyLoadImage = ({ src, class: className = "", ...imgProps }) => {
   const loaded = useContext(LazyLoadContext);
   let currentSrc, dataSrc;
   if (loaded[src]) {

@@ -1,9 +1,21 @@
+import alias from "@rollup/plugin-alias";
 import commonjs from "@rollup/plugin-commonjs";
 import json from "@rollup/plugin-json";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 
 const common = {
-  plugins: [json(), commonjs(), nodeResolve({ browser: true })],
+  plugins: [
+    alias({
+      entries: [
+        { find: "react", replacement: "preact/compat" },
+        { find: "react-dom/test-utils", replacement: "preact/test-utils" },
+        { find: "react-dom", replacement: "preact/compat" },
+      ],
+    }),
+    json(),
+    commonjs(),
+    nodeResolve({ browser: true }),
+  ],
 };
 
 export default [
