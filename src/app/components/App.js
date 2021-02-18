@@ -41,7 +41,7 @@ export const App = ({ stats = {}, items = [], theme = "light", postMessage }) =>
   const [hbR, hbG, hbB] = hslToRgb(
     (timeStats % HB_COLOR_CYCLE_INTERVAL) / HB_COLOR_CYCLE_INTERVAL,
     0.6,
-    0.3
+    applyDarkTheme ? 0.7 : 0.3
   );
 
   return html`

@@ -2,7 +2,7 @@ export default function () {
   const config = {
     ENV: "development",
     APP_NAME: "feedseeker",
-    UPDATE_STATS_INTERVAL: 500,
+    UPDATE_STATS_INTERVAL: 200,
     QUEUE_CONCURRENCY: 2,
     FEED_POLL_CONCURRENCY: 4,
     FEED_POLL_INTERVAL: 1000 * 60 * 60,
