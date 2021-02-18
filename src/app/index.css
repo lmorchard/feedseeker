@@ -1,9 +1,56 @@
+:root {
+  color-scheme: light dark; /* both supported */
+}
+
 body {
-  background-color: #eee;
+  --page-bg-color: #eee;
+  --header-bg-color: #fff;
+  --header-border-color: #aaa;
+  --box-shadow-color: rgba(0, 0, 0, 0.4);
+  --nav-button-color: rgba(255, 255, 255, 1.0);
+  --nav-button-bg-color: rgba(0, 0, 0, 0.5);
+  --nav-button-hover-bg-color: rgba(0, 0, 0, 0.7);
+  --text-shadow-color: #000;
+  --item-text-color: #000;
+  --item-bg-color: #fff;
+  --item-border-color: #aaa;
+  --item-text-bg-color: rgba(255, 255, 255, 0.3);
+  --title-color: rgba(0, 0, 0, 1.0);
+  --title-bg-color: rgba(255, 255, 255, 0.5);
+  --title-has-thumb-color: rgba(255, 255, 255, 1.0);
+  --title-has-thumb-bg-color: rgba(0, 0, 0, 0.5);
+  --options-panel-bg-color: rgba(0, 0, 0, 0.8);
+  --options-panel-button-bg-color: rgba(255, 255, 255, 0.8);
+  --options-panel-button-hover-bg-color: rgba(255, 255, 255, 1.0);
+
+  background-color: var(--page-bg-color);
   font-family: sans-serif;
   font-size: 14px;
   padding: 1em 1em 1em 1em;
   margin: 0.5em;
+}
+
+body.dark-theme {
+  --page-bg-color: #333;
+  --header-bg-color: #222;
+  --header-border-color: #333;
+  --box-shadow-color: rgba(32, 32, 32, 0.4);
+  --nav-button-color: rgba(0, 0, 0, 1.0);
+  --nav-button-bg-color: rgba(255, 255, 255, 0.5);
+  --nav-button-hover-bg-color: rgba(255, 255, 255, 0.8);
+  --text-shadow-color: rgba(64, 64, 64, 0.4);
+  --item-text-color: rgba(224, 224, 224, 1.0);
+  --item-bg-color: rgba(32, 32, 32, 1.0);
+  --item-border-color: #222;
+  --item-text-bg-color: rgba(32, 32, 32, 0.3);
+  --title-color: rgba(224, 224, 224, 1.0);
+  --title-bg-color: rgba(32, 32, 32, 0.5);
+  --title-has-thumb-color: rgba(24,24,24, 1.0);
+  --title-has-thumb-bg-color: rgba(255, 255, 255, 0.7);
+  --options-panel-bg-color: rgba(255, 255, 255, 0.7);
+  --options-panel-button-color: rgba(255, 255, 255, 1.0);
+  --options-panel-button-bg-color: rgba(32, 32, 32, 0.7);
+  --options-panel-button-hover-bg-color: rgba(32, 32, 32, 0.9);
 }
 
 #app {
@@ -16,9 +63,9 @@ body {
   left: 0;
   height: 3em;
   width: 100%;
-  background-color: #fff;
-  border: 1px solid #aaa;
-  box-shadow: 4px 4px 3px rgba(0, 0, 0, 0.4);
+  background-color: var(--header-bg-color);
+  border: 1px solid var(--header-border-color);
+  box-shadow: 4px 4px 3px var(--box-shadow-color);
   z-index: 999;
   display: flex;
   flex-direction: row;
@@ -44,13 +91,36 @@ body {
   cursor: pointer;
   margin: 0 0.25em;
   padding: 0.5em 0.75em;
-  color: rgba(255,255,255, 1.0);
-  background-color: rgba(0, 0, 0, 0.5);
-  text-shadow: 2px 2px 2px #000;  
+  color: var(--nav-button-color);
+  background-color: var(--nav-button-bg-color);
+  text-shadow: 2px 2px 2px var(--text-shadow-color);
 }
 
 #app > header nav button:hover {
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: var(--nav-button-hover-bg-color);
+}
+
+#app > header nav .theme-indicator {
+  color: white;
+  text-indent: -0.75em;
+  margin: 0em 0.75em;
+  white-space: nowrap;
+  overflow: hidden;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+#app > header nav .theme-indicator:hover {
+  opacity: 1.0;
+}
+
+#app > header nav .theme-indicator::after {
+  font-size: 24px;
+  content: "\1F31E";
+}
+
+.dark-theme #app > header nav .theme-indicator::after {
+  content: "\1F31A";
 }
 
 .feeds {
@@ -72,9 +142,9 @@ body {
   font-size: 1.5em;
   padding: 0.5em 1em;
   margin: 0 0 1em 0;
-  background-color: #fff;
-  border: 1px solid #aaa;
-  box-shadow: 4px 4px 3px rgba(0, 0, 0, 0.4);
+  background-color: var(--item-bg-color);
+  border: 1px solid var(--item-border-color);
+  box-shadow: 4px 4px 3px var(--box-shadow-color);
   cursor: pointer;
 }
 
@@ -97,36 +167,14 @@ body {
   flex-wrap: wrap;
 }
 
-.feeditems .next-feed-page {
-  display: table;
-  width: 100%;
-  border: 1px solid #ccc;
-  box-shadow: 4px 4px 3px rgba(0, 0, 0, 0.4);
-}
-.feeditems .next-feed-page a {
-  display: block;
-  padding: 0.5em 1em;
-  font-size: 1.25em;
-  font-weight: bold;
-  text-align: center;
-  background-color: rgba(255, 255, 255, 1);
-  text-decoration: none;
-}
-.feeditems .next-feed-page a:hover {
-  background-color: rgba(255, 255, 255, 0.8);
-}
-.feeditems .next-feed-page.loading a {
-  opacity: 0.5;
-}
-
 .feeditems .feeditem {
   position: relative;
   padding-bottom: 2em;
   margin-bottom: 1em;
   list-style-type: none;
-  background-color: #fff;
-  border: 1px solid #aaa;
-  box-shadow: 4px 4px 3px rgba(0, 0, 0, 0.4);
+  background-color: var(--item-bg-color);
+  border: 1px solid var(--item-border-color);
+  box-shadow: 4px 4px 3px var(--box-shadow-color);
 
   background-repeat: no-repeat;
   background-size: 100%;
@@ -136,9 +184,6 @@ body {
 
   flex-basis: calc(100% / 5);
   max-width: calc(100vw / 5 - 2em);
-}
-
-.feeditems .feeditem.has-thumb {
 }
 
 .feeditem summary {
@@ -164,27 +209,29 @@ body {
   padding: 2.5em 1em 0em 1em;
   display: block;
   font-weight: 600;
-  background-color: rgba(255, 255, 255, 0.5);
   overflow-wrap: break-word;
   text-decoration: none;
-  color: rgba(0, 0, 0, 1.0);
+  color: var(--title-color);
+  background-color: var(--title-bg-color);
 }
 
 .feeditem.has-thumb summary .title {
   position: absolute;
   bottom: 0em;
   padding: 0.5em 1em;
-  color: rgba(255,255,255, 1.0);
-  background-color: rgba(0, 0, 0, 0.5);
-  text-shadow: 2px 2px 2px #000;
+  color: var(--title-has-thumb-color);
+  background-color: var(--title-has-thumb-bg-color);
+  text-shadow: 2px 2px 2px var(--text-shadow-color);
 }
 
 .feeditem .text {
   padding: 2em 1em 1em 1em;
   display: block;
   margin-bottom: 0.25em;
-  background-color: rgba(255, 255, 255, 0.3);
+  color: var(--item-text-color);
+  background-color: var(--item-text-bg-color);
 }
+
 .feeditem.has-thumb .text {
   padding: 1em 1em 1em 1em;
 }
@@ -212,19 +259,19 @@ body {
 
 .feeditem .date a {
   text-decoration: none;
-  color: rgba(0, 0, 0, 1.0);
+  color: var(--title-color);
 }
 
 .feeditem.has-thumb .date {
-  background-color: rgba(0, 0, 0, 0.5);
-  text-shadow: 2px 2px 2px #000;
+  background-color: var(--title-has-thumb-bg-color);
+  text-shadow: 2px 2px 2px var(--text-shadow-color);
   left: 0;
   top: 0;
   padding: 0.5em 1.25em;
 }
 
 .feeditem.has-thumb .date a {
-  color: rgba(255,255,255, 1.0);
+  color: var(--title-has-thumb-color);
 }
 
 .feeditem .source {
@@ -241,7 +288,7 @@ body {
 
 .feeditem .source .link {  
   text-decoration: none;
-  color: rgba(0, 0, 0, 1.0);
+  color: var(--title-color);
 }
 
 .feeditem .source .icon {
@@ -258,13 +305,13 @@ body {
   padding: 0.5em 0.75em;
   font-size: 0.8em;
   cursor: pointer;
-  color: rgba(255,255,255, 1.0);
-  background-color: rgba(0, 0, 0, 0.5);
-  text-shadow: 2px 2px 2px #000;
+  color: var(--nav-button-color);
+  background-color: var(--nav-button-bg-color);
+  text-shadow: 2px 2px 2px var(--text-shadow-color);
 }
 
 .feeditem button.options:hover {
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: var(--nav-button-hover-bg-color);
 }
 
 .feeditem .optionsPanel {
@@ -278,9 +325,9 @@ body {
   right: 0;
   bottom: 0;
   padding: 1em;
-  color: rgba(255,255,255, 1.0);
-  background-color: rgba(0, 0, 0, 0.8);
-  text-shadow: 2px 2px 2px #000;
+  color: var(--title-has-thumb-color);
+  background-color: var(--options-panel-bg-color);
+  text-shadow: 2px 2px 2px var(--text-shadow-color);
 }
 
 .feeditem .optionsPanel button {
@@ -290,13 +337,13 @@ body {
   padding: 1em;
   font-size: 0.8em;
   cursor: pointer;
-  color: rgba(0, 0, 0, 1.0);
-  background-color: rgba(255, 255, 255, 0.8);
+  color: var(--options-panel-button-color);
+  background-color: var(--options-panel-button-bg-color);
   font-size: 0.85em;
 }
 
 .feeditem .optionsPanel button:hover {
-  background-color: rgba(255, 255, 255, 1.0);
+  background-color: var(--options-panel-button-hover-bg-color);
 }
 
 .feeditem .optionsPanel button.optionsClose {
@@ -309,11 +356,11 @@ body {
   font-size: 0.8em;
   cursor: pointer;
   color: rgba(0, 0, 0, 1.0);
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: var(--options-panel-button-bg-color);
 }
 
 .feeditem .optionsPanel button.optionsClose:hover {
-  background-color: rgba(255, 255, 255, 1.0);
+  background-color: var(--options-panel-button-hover-bg-color);
 }
 
 @media screen and (max-width: 1600px) {

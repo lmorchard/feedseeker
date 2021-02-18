@@ -5,7 +5,7 @@ import Store from "./store";
 import { createQueue, queues } from "./queues";
 import { hashStringAsID } from "./utils";
 
-const { FEED_POLL_CONCURRENCY } = config();
+const { FEED_POLL_CONCURRENCY, FEED_POLL_TIMEOUT, USER_AGENT } = config();
 const log = setupLog("lib/feeds");
 
 export async function setupFeeds() {
@@ -96,7 +96,16 @@ export async function followFeed(feed) {
 
 export async function fetchFeed(feed) {
   log.trace("fetchFeed", feed.href);
-  const response = await fetch(feed.href);
+  const controller = new AbortController();
+  const abortTimeout = setTimeout(() => controller.abort(), FEED_POLL_TIMEOUT);
+  const response = await fetch(feed.href, {
+    method: "GET",
+    headers: {
+      "user-agent": USER_AGENT,
+    },
+    signal: controller.signal,
+  });
+  clearTimeout(abortTimeout);
   const data = await response.text();
   const parser = new RSSParser();
   const parsed = await parser.parseString(data);

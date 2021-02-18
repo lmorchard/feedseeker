@@ -19,6 +19,7 @@ async function init() {
   log.debug("port connected", port);
 
   browser.storage.onChanged.addListener(updateAll);
+  appProps.theme = await Store.getAppTheme();
   await updateAll();
 }
 

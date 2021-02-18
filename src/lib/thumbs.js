@@ -75,7 +75,7 @@ export async function discoverThumbsForFeed(feedID) {
       try {
         item.thumbUrl = await discoverThumb(item.link);
       } catch (error) {
-        log.error("failed to discover thumb", feed, item, error);
+        log.error("failed to discover thumb", feed.href, item.link, error);
       }
       item.thumbFetched = true;
       feedChanged = true;
@@ -96,7 +96,7 @@ export async function discoverThumb(url, timeout = DISCOVER_THUMB_TIMEOUT) {
     return _cache[url][0];
   }
   const controller = new AbortController();
-  const abortTimeout = setTimeout(() => controller.abort(), parseInt(timeout));
+  const abortTimeout = setTimeout(() => controller.abort(), timeout);
   const response = await fetch(url, {
     method: "GET",
     headers: {

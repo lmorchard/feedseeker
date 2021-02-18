@@ -75,6 +75,14 @@ export const Store = {
       ignoredFeedIDs.filter((id) => id !== feedID)
     );
   },
+
+  async getAppTheme() {
+    return get("appTheme", "light");
+  },
+
+  async setAppTheme(theme) {
+    return set("appTheme", theme);
+  }
 };
 
 export default Store;
