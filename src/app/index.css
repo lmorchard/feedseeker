@@ -44,9 +44,9 @@ body.dark-theme {
   --item-border-color: #222;
   --item-text-bg-color: rgba(32, 32, 32, 0.3);
   --title-color: rgba(224, 224, 224, 1.0);
-  --title-bg-color: rgba(32, 32, 32, 0.5);
+  --title-bg-color: rgba(32, 32, 32, 0.3);
   --title-has-thumb-color: rgba(24,24,24, 1.0);
-  --title-has-thumb-bg-color: rgba(255, 255, 255, 0.7);
+  --title-has-thumb-bg-color: rgba(224, 224, 224, 0.7);
   --options-panel-bg-color: rgba(255, 255, 255, 0.7);
   --options-panel-button-color: rgba(255, 255, 255, 1.0);
   --options-panel-button-bg-color: rgba(32, 32, 32, 0.7);
@@ -247,6 +247,7 @@ body.dark-theme {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--title-color);
 }
 
 .feeditem .date {

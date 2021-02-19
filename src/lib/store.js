@@ -15,6 +15,8 @@ const get = async (id, defval) => {
 
 const set = async (id, value) => storage.set({ [toStoreId(id)]: value });
 
+const remove = async (...ids) => storage.remove(ids.map(toStoreId));
+
 export const Store = {
   async init() {},
 
@@ -42,6 +44,10 @@ export const Store = {
     return set(`${FEEDS_PREFIX}${id}`, feed);
   },
 
+  async removeFeeds(...ids) {
+    return remove(ids.map((id) => `${FEEDS_PREFIX}${id}`));
+  },
+
   async updateFeed(feed, updater) {
     const id = await this.feedToID(feed);
     const existing = await this.getFeed(id, {});
@@ -59,7 +65,11 @@ export const Store = {
     const ignoredFeedIDs = await this.getIgnoredFeedIDs();
     const feed = await this.getFeed(feedID);
     if (feed) {
-      this.updateFeed(feed, (update) => ({ ...update, ignored: true }));
+      this.updateFeed(feed, (update) => ({
+        ...update,
+        items: [],
+        ignored: true,
+      }));
     }
     return set("ignoredFeedIDs", [...ignoredFeedIDs, feedID]);
   },
@@ -82,7 +92,7 @@ export const Store = {
 
   async setAppTheme(theme) {
     return set("appTheme", theme);
-  }
+  },
 };
 
 export default Store;

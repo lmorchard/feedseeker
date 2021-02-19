@@ -1,3 +1,7 @@
+import setupLog from "../lib/log";
+
+const log = setupLog("lib/utils");
+
 export const wait = (delay) =>
   new Promise((resolve) => setTimeout(resolve, delay));
 
@@ -13,3 +17,27 @@ export async function hashStringAsID(message) {
     )
   );
 }
+
+export const throttle = (fn, delay = 500) => {
+  let promise;
+  return async (...args) => {
+    if (!promise) {
+      log.trace("throttle(start)");
+      promise = new Promise((resolve, reject) =>
+        setTimeout(async () => {
+          try {
+            const result = await fn(...args);
+            promise = null;
+            log.trace("throttle(resolve)");
+            resolve(result);
+          } catch (error) {
+            reject(error);
+          }
+        }, delay)
+      );
+    } else {
+      log.trace("throttle(pending)");
+    }
+    return promise;
+  };
+};

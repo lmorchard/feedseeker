@@ -4,22 +4,25 @@ import setupLog from "../lib/log";
 import Store from "../lib/store";
 import config from "../lib/config";
 import { getItemTime } from "../lib/feeds";
+import { throttle } from "../lib/utils";
 import App from "./components/App";
 
 const log = setupLog("app");
-const { DISPLAY_MAX_AGE } = config();
+const { DISPLAY_MAX_AGE, APP_UPDATE_INTERVAL } = config();
 
 let port;
 let appProps = {};
 
 async function init() {
   log.trace("init");
+  appProps.theme = await Store.getAppTheme();
 
   port = setupPort();
-  log.debug("port connected", port);
+  log.trace("port connected", port);
 
-  browser.storage.onChanged.addListener(updateAll);
-  appProps.theme = await Store.getAppTheme();
+  browser.storage.onChanged.addListener(
+    throttle(updateAll, APP_UPDATE_INTERVAL)
+  );
   await updateAll();
 }
 
@@ -37,7 +40,6 @@ async function updateAll() {
       log.error("No such feed for ID", feedID);
       continue;
     }
-
     if (feed.items) {
       for (const item of feed.items) {
         if (getItemTime(item) < minDisplayTime) continue;
@@ -45,6 +47,7 @@ async function updateAll() {
       }
     }
   }
+
   updateApp({ feedIDs, items });
 }
 

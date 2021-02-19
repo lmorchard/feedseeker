@@ -3,19 +3,29 @@ import { useState, useCallback, useEffect } from "preact/hooks";
 import { hslToRgb } from "../../lib/hslToRgb";
 import { getItemTime } from "../../lib/feeds";
 import Store from "../../lib/store";
+import config from "../../lib/config";
 import FeedItem from "./FeedItem";
 import { LazyLoadManager } from "./LazyLoad";
 
-export const App = ({ stats = {}, items = [], theme = "light", postMessage }) => {
+const { DISPLAY_LIMIT } = config();
+
+export const App = ({
+  stats = {},
+  items = [],
+  theme = "light",
+  displayLimit = DISPLAY_LIMIT,
+  postMessage,
+}) => {
   const [applyDarkTheme, setApplyDarkTheme] = useState(theme === "dark");
 
-  const toggleTheme = useCallback(() => {
-    setApplyDarkTheme((applyDarkTheme) => !applyDarkTheme);
-    Store.setAppTheme(applyDarkTheme ? "dark" : "light");
-  }, [ setApplyDarkTheme ]);
+  const toggleTheme = useCallback(
+    () => setApplyDarkTheme((applyDarkTheme) => !applyDarkTheme),
+    [setApplyDarkTheme]
+  );
 
-  useEffect(() => {
+  useEffect(async () => {
     document.body.classList[applyDarkTheme ? "add" : "remove"]("dark-theme");
+    await Store.setAppTheme(applyDarkTheme ? "dark" : "light");
   }, [applyDarkTheme]);
 
   const pollAllFeeds = () => postMessage("pollAllFeeds");
@@ -24,8 +34,7 @@ export const App = ({ stats = {}, items = [], theme = "light", postMessage }) =>
 
   const itemsSorted = [...items]
     .sort((a, b) => getItemTime(b) - getItemTime(a))
-    .slice(0, 200)
-    ;
+    .slice(0, displayLimit);
 
   const formatStatus = ({ isRunning, pending, size } = {}) =>
     isRunning
@@ -60,7 +69,10 @@ export const App = ({ stats = {}, items = [], theme = "light", postMessage }) =>
       <ul className="feeditems">
         ${itemsSorted.map(
           (item, idx) => html`
-            <${FeedItem} key="${idx}" ...${{ item, feed: item.feed }} />
+            <${FeedItem}
+              key="${idx}-${item.id}"
+              ...${{ item, feed: item.feed }}
+            />
           `
         )}
       </ul>
