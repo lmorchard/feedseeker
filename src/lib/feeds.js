@@ -5,13 +5,27 @@ import Store from "./store";
 import { createQueue, queues } from "./queues";
 import { hashStringAsID } from "./utils";
 
-const { FEED_POLL_CONCURRENCY, FEED_POLL_TIMEOUT, USER_AGENT } = config();
+const {
+  DEBUG,
+  FEED_POLL_CONCURRENCY,
+  FEED_POLL_INTERVAL,
+  FEED_POLL_TIMEOUT,
+  USER_AGENT,
+  DISPLAY_MAX_AGE,
+} = config();
 const log = setupLog("lib/feeds");
 
-export async function setupFeeds() {
+export async function setupFeeds({ broadcastMessage }) {
   log.trace("setupFeeds");
+
+  setInterval(pollAllFeeds, FEED_POLL_INTERVAL);
+
   createQueue("feedPollQueue", {
     concurrency: FEED_POLL_CONCURRENCY,
+    onStart: () => {
+      log.info("feedPollQueue start");
+      broadcastMessage("appPage", "feedPollStart");
+    },
     onTask: pollOneFeed,
     onResolve: (result, task, taskId) => {
       log.trace("feedPollQueue resolve", taskId, task, result);
@@ -19,8 +33,10 @@ export async function setupFeeds() {
     onReject: (result, task, taskId) => {
       log.error("feedPollQueue error", taskId, task, result);
     },
-    onDone: () => {
+    onDone: async () => {
       log.info("feedPollQueue done");
+      await updateAggregatedFeedItems();
+      broadcastMessage("appPage", "feedPollDone");
     },
   });
 }
@@ -171,6 +187,35 @@ export async function pollOneFeed(feedID) {
   }));
 
   queues.discoverThumbQueue.push(feedID);
+}
+
+export async function updateAggregatedFeedItems() {
+  DEBUG && console.time("updateAggregatedFeedItems");
+
+  const feedIDs = await Store.getFeedIDs();
+  const ignoredFeedIDs = await Store.getIgnoredFeedIDs();
+  const itemCutoffTime = Date.now() - DISPLAY_MAX_AGE;
+  const items = [];
+
+  for (const feedID of feedIDs) {
+    if (ignoredFeedIDs.includes(feedID)) continue;
+    const feed = await Store.getFeed(feedID);
+    if (!feed) {
+      log.error("No such feed for ID", feedID);
+      continue;
+    }
+    if (feed.items) {
+      for (const item of feed.items) {
+        if (getItemTime(item) > itemCutoffTime) {
+          items.push({ ...item, feed });
+        }
+      }
+    }
+  }
+
+  DEBUG && console.timeEnd("updateAggregatedFeedItems");
+
+  return Store.setAggregatedFeedItems(items);
 }
 
 const itemID = async ({ title, link, guid }) =>

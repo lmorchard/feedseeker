@@ -2,21 +2,24 @@ import { html } from "htm/preact";
 import { useState, useCallback, useEffect } from "preact/hooks";
 import { hslToRgb } from "../../lib/hslToRgb";
 import { getItemTime } from "../../lib/feeds";
-import Store from "../../lib/store";
-import config from "../../lib/config";
 import FeedItem from "./FeedItem";
 import { LazyLoadManager } from "./LazyLoad";
+import AppContext from "./AppContext";
 
-const { DISPLAY_LIMIT } = config();
+export const App = (props = {}) => {
+  const {
+    config: { DISPLAY_LIMIT },
+    stats = {},
+    items = [],
+    initialTheme = "light",
+    displayLimit = DISPLAY_LIMIT,
+    busy = false,
+    setAppTheme,
+    pollAllFeeds,
+    discoverThumbsForAllFeeds,
+  } = props;
 
-export const App = ({
-  stats = {},
-  items = [],
-  theme = "light",
-  displayLimit = DISPLAY_LIMIT,
-  postMessage,
-}) => {
-  const [applyDarkTheme, setApplyDarkTheme] = useState(theme === "dark");
+  const [applyDarkTheme, setApplyDarkTheme] = useState(initialTheme === "dark");
 
   const toggleTheme = useCallback(
     () => setApplyDarkTheme((applyDarkTheme) => !applyDarkTheme),
@@ -25,12 +28,8 @@ export const App = ({
 
   useEffect(async () => {
     document.body.classList[applyDarkTheme ? "add" : "remove"]("dark-theme");
-    await Store.setAppTheme(applyDarkTheme ? "dark" : "light");
+    await setAppTheme(applyDarkTheme ? "dark" : "light");
   }, [applyDarkTheme]);
-
-  const pollAllFeeds = () => postMessage("pollAllFeeds");
-  const discoverThumbsForAllFeeds = () =>
-    postMessage("discoverThumbsForAllFeeds");
 
   const itemsSorted = [...items]
     .sort((a, b) => getItemTime(b) - getItemTime(a))
@@ -54,28 +53,31 @@ export const App = ({
   );
 
   return html`
-    <${LazyLoadManager}>
-      <header>
-        <h1 style=${{ color: `rgb(${hbR}, ${hbG}, ${hbB})` }}>FeedSeeker</h1>
-        <nav>
-          <button onClick=${pollAllFeeds}>Feeds (${feedsStatus})</button>
-          <button onClick=${discoverThumbsForAllFeeds}>
-            Thumbs (${thumbsStatus})
-          </button>
-          <span class="theme-indicator" onClick=${toggleTheme}>X</span>
-        </nav>
-      </header>
+    <${AppContext.Provider} value=${props}>
+      <${LazyLoadManager}>
+        <header>
+          <h1 style=${{ color: `rgb(${hbR}, ${hbG}, ${hbB})` }}>FeedSeeker</h1>
+          <nav>
+            <span class="busy-indicator${busy ? " busy" : ""}"></span>
+            <button onClick=${pollAllFeeds}>Feeds (${feedsStatus})</button>
+            <button onClick=${discoverThumbsForAllFeeds}>
+              Thumbs (${thumbsStatus})
+            </button>
+            <span class="theme-indicator" onClick=${toggleTheme}>X</span>
+          </nav>
+        </header>
 
-      <ul className="feeditems">
-        ${itemsSorted.map(
-          (item, idx) => html`
-            <${FeedItem}
-              key="${idx}-${item.id}"
-              ...${{ item, feed: item.feed }}
-            />
-          `
-        )}
-      </ul>
+        <ul className="feeditems">
+          ${itemsSorted.map(
+            (item, idx) => html`
+              <${FeedItem}
+                key="${idx}-${item.id}"
+                ...${{ item, feed: item.feed }}
+              />
+            `
+          )}
+        </ul>
+      <//>
     <//>
   `;
 };

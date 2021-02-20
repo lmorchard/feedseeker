@@ -27,9 +27,9 @@ export const throttle = (fn, delay = 500) => {
         setTimeout(async () => {
           try {
             const result = await fn(...args);
-            promise = null;
             log.trace("throttle(resolve)");
             resolve(result);
+            promise = null;
           } catch (error) {
             reject(error);
           }

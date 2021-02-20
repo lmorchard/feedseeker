@@ -6,6 +6,7 @@ As you browse, it attempts to discover feeds and automatically start following t
 
 ## TODO
 
+* maybe only update app at the end of feed poll queue done and thumb done?
 * popup for browser action button to show what feeds were discovered
   * allow immediate ignore from there
 * feed management panel

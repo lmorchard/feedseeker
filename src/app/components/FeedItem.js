@@ -1,12 +1,16 @@
 import { html } from "htm/preact";
 import { LazyLoadImage } from "./LazyLoad";
-import { useState, useCallback } from "preact/hooks";
+import { useState, useCallback, useContext } from "preact/hooks";
 import { format as timeagoFormat } from "timeago.js";
-
+import AppContext from "./AppContext";
 import { getItemTime } from "../../lib/feeds";
-import Store from "../../lib/store";
 
 export const FeedItem = ({ item, feed }) => {
+  const {
+    addIgnoredFeedID,
+    updateFeedsData,
+  } = useContext(AppContext);
+
   const { id: feedID, title: feedTitle, link: feedLink } = feed;
 
   const {
@@ -36,13 +40,17 @@ export const FeedItem = ({ item, feed }) => {
     [setShowOptions]
   );
 
-  const addIgnoredFeedID = useCallback(async () => {
+  const handleAddIgnoredFeedID = useCallback(async () => {
     setShowOptions(false);
-    await Store.addIgnoredFeedID(feedID);
+    await addIgnoredFeedID(feedID);
+    updateFeedsData();
   }, [feedID]);
 
   return html`
-    <li id="item-${id}" class="feeditem${!thumbUrl ? "" : " has-thumb"}">
+    <li
+      id="item-${id}"
+      class="feeditem${!thumbUrl ? "" : " has-thumb"}"
+    >
       <summary>
         ${!thumbUrl
           ? ""
@@ -87,7 +95,7 @@ export const FeedItem = ({ item, feed }) => {
       html`
         <div class="optionsPanel">
           <button class="optionsClose" onClick=${toggleOptions}>(X)</button>
-          <button onClick=${addIgnoredFeedID}>Ignore this feed</button>
+          <button onClick=${handleAddIgnoredFeedID}>Ignore this feed</button>
         </div>
       `}
     </li>

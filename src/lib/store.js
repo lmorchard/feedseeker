@@ -93,6 +93,14 @@ export const Store = {
   async setAppTheme(theme) {
     return set("appTheme", theme);
   },
+
+  async getAggregatedFeedItems() {
+    return get("aggregatedFeedItems", []);
+  },
+
+  async setAggregatedFeedItems(items) {
+    return set("aggregatedFeedItems", items);
+  },
 };
 
 export default Store;

@@ -46,7 +46,7 @@ export async function setupThumbs() {
       log.error("error", taskId, task, result);
     },
     onDone: () => {
-      log.info("done");
+      log.trace("done");
     },
   });
 }

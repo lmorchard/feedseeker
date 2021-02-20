@@ -1,16 +1,16 @@
 import config from "./lib/config";
 import setupLog from "./lib/log";
-import { setupFeeds, pollAllFeeds, followFeed } from "./lib/feeds";
-import { setupQueues, queueStats } from "./lib/queues";
+import {
+  setupFeeds,
+  pollAllFeeds,
+  followFeed,
+  updateAggregatedFeedItems,
+} from "./lib/feeds";
+import { setupQueues } from "./lib/queues";
 import { setupThumbs, discoverThumbsForAllFeeds } from "./lib/thumbs";
 import Store from "./lib/store";
 
-const {
-  DEBUG,
-  UPDATE_STATS_INTERVAL,
-  FEED_POLL_INTERVAL,
-  DISCOVER_THUMB_INTERVAL,
-} = config();
+const { DEBUG } = config();
 
 const MENU_FOLLOW_LINK_ID = "followFeedLink";
 
@@ -22,9 +22,12 @@ const ports = {
 };
 
 async function init() {
-  await setupQueues();
-  await setupFeeds();
-  await setupThumbs();
+  const context = {
+    broadcastMessage,
+  };
+  await setupQueues(context);
+  await setupFeeds(context);
+  await setupThumbs(context);
 
   browser.menus.create({
     id: MENU_FOLLOW_LINK_ID,
@@ -34,17 +37,13 @@ async function init() {
       16: "images/logo.svg",
     },
   });
-
   browser.menus.onClicked.addListener(handleMenu);
-  browser.runtime.onConnect.addListener(handleConnect);
   browser.browserAction.onClicked.addListener(handleBrowserAction);
-
-  setInterval(updateStats, UPDATE_STATS_INTERVAL);
-  setInterval(pollAllFeeds, FEED_POLL_INTERVAL);
-  setInterval(discoverThumbsForAllFeeds, DISCOVER_THUMB_INTERVAL);
+  browser.runtime.onConnect.addListener(handleConnect);
 
   if (DEBUG) {
     openApp();
+    updateAggregatedFeedItems();
   }
 }
 
@@ -52,13 +51,6 @@ const postMessage = (port, type, data) => port.postMessage({ type, data });
 
 const broadcastMessage = (name, type, data) =>
   Object.values(ports[name]).forEach((port) => postMessage(port, type, data));
-
-function updateStats() {
-  broadcastMessage("appPage", "updateStats", {
-    time: Date.now(),
-    queue: queueStats(),
-  });
-}
 
 async function handleBrowserAction() {
   openApp();

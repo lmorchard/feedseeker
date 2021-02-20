@@ -1,11 +1,24 @@
+import config from "./config";
 import setupLog from "./log";
+
+const {
+  UPDATE_STATS_INTERVAL,
+} = config();
 
 const log = setupLog("lib/queues");
 
 export const queues = {};
 
-export async function setupQueues() {
+export async function setupQueues({ broadcastMessage }) {
   log.trace("setupQueues");
+  
+  setInterval(() => {
+    broadcastMessage("appPage", "updateStats", {
+      time: Date.now(),
+      queue: queueStats(),
+    });  
+  }, UPDATE_STATS_INTERVAL);
+
   return queues;
 }
 
@@ -64,6 +77,7 @@ export class QueueRunner {
     concurrency = 1,
     autoStart = true,
     source = new InMemorySource(),
+    onStart = noop,
     onPush = noop,
     onTask = noop,
     onResolve = noop,
@@ -74,6 +88,7 @@ export class QueueRunner {
     Object.assign(this, {
       concurrency,
       autoStart,
+      onStart,
       onPush,
       onTask,
       onResolve,
@@ -89,6 +104,9 @@ export class QueueRunner {
 
   async start() {
     log.trace("start");
+    if (!this.isRunning) {
+      this.onStart();
+    }
     this.isRunning = true;
     setTimeout(() => this.next(), 0.1);
   }

@@ -2,53 +2,36 @@ import { html, render } from "htm/preact";
 
 import setupLog from "../lib/log";
 import Store from "../lib/store";
-import config from "../lib/config";
-import { getItemTime } from "../lib/feeds";
-import { throttle } from "../lib/utils";
+import setupConfig from "../lib/config";
 import App from "./components/App";
 
+const config = setupConfig();
+const { DEBUG } = config;
 const log = setupLog("app");
-const { DISPLAY_MAX_AGE, APP_UPDATE_INTERVAL } = config();
 
 let port;
 let appProps = {};
 
 async function init() {
   log.trace("init");
-  appProps.theme = await Store.getAppTheme();
 
   port = setupPort();
   log.trace("port connected", port);
 
-  browser.storage.onChanged.addListener(
-    throttle(updateAll, APP_UPDATE_INTERVAL)
-  );
-  await updateAll();
-}
+  appProps = {
+    config,
+    postMessage,
+    updateApp,
+    busy: false,
+    initialTheme: await Store.getAppTheme(),    
+    updateFeedsData: updateFeedsData,
+    setAppTheme: (theme) => Store.setAppTheme(theme),
+    addIgnoredFeedID: (feedID) => Store.addIgnoredFeedID(feedID),
+    pollAllFeeds: () => postMessage("pollAllFeeds"),
+    discoverThumbsForAllFeeds: () => postMessage("discoverThumbsForAllFeeds"),
+  };
 
-async function updateAll() {
-  const feedIDs = await Store.getFeedIDs();
-  const ignoredFeedIDs = await Store.getIgnoredFeedIDs();
-
-  const minDisplayTime = Date.now() - DISPLAY_MAX_AGE;
-
-  const items = [];
-  for (const feedID of feedIDs) {
-    if (ignoredFeedIDs.includes(feedID)) continue;
-    const feed = await Store.getFeed(feedID);
-    if (!feed) {
-      log.error("No such feed for ID", feedID);
-      continue;
-    }
-    if (feed.items) {
-      for (const item of feed.items) {
-        if (getItemTime(item) < minDisplayTime) continue;
-        items.push({ ...item, feed });
-      }
-    }
-  }
-
-  updateApp({ feedIDs, items });
+  await updateFeedsData();
 }
 
 const renderApp = () => {
@@ -57,6 +40,24 @@ const renderApp = () => {
     document.getElementById("app"),
     document.getElementById("app").firstChild
   );
+};
+
+const updateFeedsData = async (props = {}) => {
+  DEBUG && console.time("updateFeedsData");
+
+  updateApp({ busy: true });
+
+  const feedIDs = await Store.getFeedIDs();
+  const ignoredFeedIDs = await Store.getIgnoredFeedIDs();
+  const items = (await Store.getAggregatedFeedItems()).filter(
+    (item) => !ignoredFeedIDs.includes(item.feed.id)
+  );
+  window.feedItems = items;
+  log.debug("items loaded = ", items.length);
+
+  updateApp({ ...props, feedIDs, items, busy: false });
+
+  DEBUG && console.timeEnd("updateFeedsData");
 };
 
 const updateApp = (props = {}) => {
@@ -77,6 +78,10 @@ async function handleMessage({ message }) {
   switch (type) {
     case "updateStats":
       return updateApp({ stats: data });
+    case "feedPollStart":
+      return updateApp({ feedPollActive: true });
+    case "feedPollDone":
+      return updateFeedsData({ feedPollActive: false });
     default:
       log.warn("Unimplemented message", message);
   }

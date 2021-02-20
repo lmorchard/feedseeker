@@ -123,6 +123,24 @@ body.dark-theme {
   content: "\1F31A";
 }
 
+#app > header nav .busy-indicator {
+  color: white;
+  /*text-indent: -0.5em;*/
+  margin: 0em 0.5em;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 24px;
+}
+
+#app > header nav .busy-indicator::after {
+  font-size: 24px;
+  content: "\00a0";
+}
+
+#app > header nav .busy-indicator.busy::after {
+  content: "\231b";
+}
+
 .feeds {
   margin: 0;
   padding: 0;
