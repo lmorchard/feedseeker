@@ -213,9 +213,9 @@ export async function updateAggregatedFeedItems() {
     }
   }
 
-  DEBUG && console.timeEnd("updateAggregatedFeedItems");
+  await Store.setAggregatedFeedItems(items);
 
-  return Store.setAggregatedFeedItems(items);
+  DEBUG && console.timeEnd("updateAggregatedFeedItems");
 }
 
 const itemID = async ({ title, link, guid }) =>

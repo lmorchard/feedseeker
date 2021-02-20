@@ -23,10 +23,13 @@ async function init() {
     postMessage,
     updateApp,
     busy: false,
-    initialTheme: await Store.getAppTheme(),    
+    initialTheme: await Store.getAppTheme(),
     updateFeedsData: updateFeedsData,
     setAppTheme: (theme) => Store.setAppTheme(theme),
-    addIgnoredFeedID: (feedID) => Store.addIgnoredFeedID(feedID),
+    addIgnoredFeedID: async (feedID) => {
+      await Store.addIgnoredFeedID(feedID);
+      updateFeedsData();
+    },
     pollAllFeeds: () => postMessage("pollAllFeeds"),
     discoverThumbsForAllFeeds: () => postMessage("discoverThumbsForAllFeeds"),
   };
@@ -42,9 +45,7 @@ const renderApp = () => {
   );
 };
 
-const updateFeedsData = async (props = {}) => {
-  DEBUG && console.time("updateFeedsData");
-
+const updateFeedsData = async (extraProps = {}) => {
   updateApp({ busy: true });
 
   const feedIDs = await Store.getFeedIDs();
@@ -52,12 +53,13 @@ const updateFeedsData = async (props = {}) => {
   const items = (await Store.getAggregatedFeedItems()).filter(
     (item) => !ignoredFeedIDs.includes(item.feed.id)
   );
-  window.feedItems = items;
-  log.debug("items loaded = ", items.length);
 
-  updateApp({ ...props, feedIDs, items, busy: false });
-
-  DEBUG && console.timeEnd("updateFeedsData");
+  updateApp({ ...extraProps, feedIDs, items, busy: false });
+  
+  if (DEBUG) {
+    window.feedItems = items;
+    window.appProps = appProps;
+  }
 };
 
 const updateApp = (props = {}) => {
@@ -83,7 +85,7 @@ async function handleMessage({ message }) {
     case "feedPollDone":
       return updateFeedsData({ feedPollActive: false });
     default:
-      log.warn("Unimplemented message", message);
+      log.trace("Unimplemented message", message);
   }
 }
 

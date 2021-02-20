@@ -6,10 +6,7 @@ import AppContext from "./AppContext";
 import { getItemTime } from "../../lib/feeds";
 
 export const FeedItem = ({ item, feed }) => {
-  const {
-    addIgnoredFeedID,
-    updateFeedsData,
-  } = useContext(AppContext);
+  const { addIgnoredFeedID } = useContext(AppContext);
 
   const { id: feedID, title: feedTitle, link: feedLink } = feed;
 
@@ -42,23 +39,19 @@ export const FeedItem = ({ item, feed }) => {
 
   const handleAddIgnoredFeedID = useCallback(async () => {
     setShowOptions(false);
-    await addIgnoredFeedID(feedID);
-    updateFeedsData();
+    addIgnoredFeedID(feedID);
   }, [feedID]);
 
   return html`
-    <li
-      id="item-${id}"
-      class="feeditem${!thumbUrl ? "" : " has-thumb"}"
-    >
+    <li id="item-${id}" class="feeditem${thumbUrl ? " has-thumb" : ""}">
       <summary>
-        ${!thumbUrl
-          ? ""
-          : html`
+        ${thumbUrl
+          ? html`
               <a target="_blank" class="thumb" href=${link}>
                 <${LazyLoadImage} src="${thumbUrl}" />
               </a>
-            `}
+            `
+          : ""}
         ${title &&
         html`<a class="title" target="_blank" href=${link}>${title}</a>`}
         <button class="options" onClick=${toggleOptions}>...</button>

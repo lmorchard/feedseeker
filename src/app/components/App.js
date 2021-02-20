@@ -8,7 +8,7 @@ import AppContext from "./AppContext";
 
 export const App = (props = {}) => {
   const {
-    config: { DISPLAY_LIMIT },
+    config: { DEBUG, DISPLAY_LIMIT },
     stats = {},
     items = [],
     initialTheme = "light",
@@ -17,6 +17,7 @@ export const App = (props = {}) => {
     setAppTheme,
     pollAllFeeds,
     discoverThumbsForAllFeeds,
+    updateFeedsData,
   } = props;
 
   const [applyDarkTheme, setApplyDarkTheme] = useState(initialTheme === "dark");
@@ -34,6 +35,9 @@ export const App = (props = {}) => {
   const itemsSorted = [...items]
     .sort((a, b) => getItemTime(b) - getItemTime(a))
     .slice(0, displayLimit);
+  if (DEBUG) {
+    window.feedItemsSorted = itemsSorted;
+  }
 
   const formatStatus = ({ isRunning, pending, size } = {}) =>
     isRunning
@@ -59,6 +63,7 @@ export const App = (props = {}) => {
           <h1 style=${{ color: `rgb(${hbR}, ${hbG}, ${hbB})` }}>FeedSeeker</h1>
           <nav>
             <span class="busy-indicator${busy ? " busy" : ""}"></span>
+            <button onClick=${updateFeedsData}>⭯</button>
             <button onClick=${pollAllFeeds}>Feeds (${feedsStatus})</button>
             <button onClick=${discoverThumbsForAllFeeds}>
               Thumbs (${thumbsStatus})
@@ -69,11 +74,8 @@ export const App = (props = {}) => {
 
         <ul className="feeditems">
           ${itemsSorted.map(
-            (item, idx) => html`
-              <${FeedItem}
-                key="${idx}-${item.id}"
-                ...${{ item, feed: item.feed }}
-              />
+            (item) => html`
+              <${FeedItem} key=${item.id} ...${{ item, feed: item.feed }} />
             `
           )}
         </ul>
