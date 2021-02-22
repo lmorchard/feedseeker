@@ -13,6 +13,7 @@ const {
   USER_AGENT,
   DISPLAY_MAX_AGE,
 } = config();
+
 const log = setupLog("lib/feeds");
 
 export async function setupFeeds({ broadcastMessage }) {
@@ -177,13 +178,22 @@ export async function pollOneFeed(feedID) {
     defunctSince: defunctIDs.has(item.id) ? item.defunctSince || timeNow : null,
   }));
 
+  mergedItems.sort((a, b) => getItemTime(b) - getItemTime(a));
+
+  let lastNewAt = feed.lastNewAt;
+  if (newItems.length) {
+    lastNewAt = timeNow;
+  } else if (!lastNewAt && mergedItems.length) {
+    lastNewAt = new Date(getItemTime(mergedItems[0])).toISOString();
+  }
+
   await Store.updateFeed(feed, (update) => ({
     ...update,
     ...fetchedFeed,
     items: mergedItems,
     fetchedCount: (update.fetchedCount || 0) + 1,
     lastFetchedAt: timeNow,
-    lastNewAt: newItems.length ? timeNow : feed.lastNewDate,
+    lastNewAt,
   }));
 
   queues.discoverThumbQueue.push(feedID);

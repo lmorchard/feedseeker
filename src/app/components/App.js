@@ -2,7 +2,7 @@ import { html } from "htm/preact";
 import { useState, useCallback, useEffect } from "preact/hooks";
 import { hslToRgb } from "../../lib/hslToRgb";
 import { getItemTime } from "../../lib/feeds";
-import FeedItem from "./FeedItem";
+import Feed from "./Feed";
 import { LazyLoadManager } from "./LazyLoad";
 import AppContext from "./AppContext";
 
@@ -10,6 +10,7 @@ export const App = (props = {}) => {
   const {
     config: { DEBUG, DISPLAY_LIMIT },
     stats = {},
+    feeds = [],
     items = [],
     initialTheme = "light",
     displayLimit = DISPLAY_LIMIT,
@@ -72,11 +73,9 @@ export const App = (props = {}) => {
           </nav>
         </header>
 
-        <ul className="feeditems">
-          ${itemsSorted.map(
-            (item) => html`
-              <${FeedItem} key=${item.id} ...${{ item, feed: item.feed }} />
-            `
+        <ul class="feeds">
+          ${feeds.map(
+            (feed) => html`<${Feed} id="feed-${feed.id}" key=${feed.id} ...${{ feed }} />`
           )}
         </ul>
       <//>

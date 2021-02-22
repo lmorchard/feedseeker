@@ -4,9 +4,10 @@ import setupLog from "../lib/log";
 import Store from "../lib/store";
 import setupConfig from "../lib/config";
 import App from "./components/App";
+import { getItemTime } from "../lib/feeds";
 
 const config = setupConfig();
-const { DEBUG } = config;
+const { DEBUG, DISPLAY_MAX_AGE } = config;
 const log = setupLog("app");
 
 let port;
@@ -48,22 +49,33 @@ const renderApp = () => {
 const updateFeedsData = async (extraProps = {}) => {
   updateApp({ busy: true });
 
-  const feedIDs = await Store.getFeedIDs();
-  const ignoredFeedIDs = await Store.getIgnoredFeedIDs();
-  const items = (await Store.getAggregatedFeedItems()).filter(
-    (item) => !ignoredFeedIDs.includes(item.feed.id)
-  );
+  const feedCutoffTime = Date.now() - DISPLAY_MAX_AGE;
 
-  updateApp({ ...extraProps, feedIDs, items, busy: false });
-  
+  const feedsMeta = Object.values(await Store.getAllFeedsMeta()).filter(
+    (feed) =>
+      !feed.ignored && new Date(feed.lastNewAt).getTime() > feedCutoffTime
+  );
+  feedsMeta.sort((a, b) => b.lastNewAt.localeCompare(a.lastNewAt));
+
+  const feeds = [];
+  for (const feedMeta of feedsMeta) {
+    const feed = await Store.getFeed(feedMeta.id);
+    if (feed.ignored) continue; // FIXME: seems missing from feedsMeta?
+    feed.items = feed.items.filter(item => getItemTime(item) > feedCutoffTime);
+    if (!feed.items.length) continue;
+    feeds.push(feed);
+  }
+
+  updateApp({ ...extraProps, feeds, busy: false });
+
   if (DEBUG) {
-    window.feedItems = items;
     window.appProps = appProps;
   }
 };
 
 const updateApp = (props = {}) => {
-  appProps = { ...appProps, ...props };
+  //appProps = { ...appProps, ...props };
+  Object.assign(appProps, props);
   renderApp();
 };
 

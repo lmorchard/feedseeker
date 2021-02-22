@@ -48,13 +48,42 @@ export const Store = {
     return remove(ids.map((id) => `${FEEDS_PREFIX}${id}`));
   },
 
+  async getAllFeedsMeta() {
+    return get(`allFeedsMeta`, {});
+  },
+
+  async setAllFeedsMeta(data) {
+    return set(`allFeedsMeta`, data);
+  },
+
+  async metaFromFeed(feed) {
+    return [
+      "id",
+      "title",
+      "link",
+      "href",
+      "ignored",
+      "lastNewAt",
+      "lastFetchedAt",
+      "seenCount",
+      "fetchedCount",
+    ].reduce((meta, name) => ({ ...meta, [name]: feed[name] }), {});
+  },
+
   async updateFeed(feed, updater) {
     const id = await this.feedToID(feed);
     const existing = await this.getFeed(id, {});
     const merged = { ...existing, ...feed, id };
     const updated = updater ? await updater(merged) : merged;
+    
     await this.setFeed(id, updated);
     await this.indexFeedID(id);
+    
+    const feedsMeta = await this.getAllFeedsMeta();
+    await this.setAllFeedsMeta({
+      ...feedsMeta,
+      [id]: await this.metaFromFeed(feed),
+    });
   },
 
   async getIgnoredFeedIDs() {

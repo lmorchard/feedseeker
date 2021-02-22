@@ -25,6 +25,7 @@ async function init() {
   const context = {
     broadcastMessage,
   };
+  
   await setupQueues(context);
   await setupFeeds(context);
   await setupThumbs(context);

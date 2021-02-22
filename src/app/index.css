@@ -4,6 +4,7 @@
 
 body {
   --page-bg-color: #eee;
+  --page-text-color: #000;
   --header-bg-color: #fff;
   --header-border-color: #aaa;
   --box-shadow-color: rgba(0, 0, 0, 0.4);
@@ -24,6 +25,7 @@ body {
   --options-panel-button-hover-bg-color: rgba(255, 255, 255, 1.0);
 
   background-color: var(--page-bg-color);
+  color: var(--page-text-color);
   font-family: sans-serif;
   font-size: 14px;
   padding: 1em 1em 1em 1em;
@@ -32,6 +34,7 @@ body {
 
 body.dark-theme {
   --page-bg-color: #333;
+  --page-text-color: rgba(224, 224, 224, 1.0);
   --header-bg-color: #222;
   --header-border-color: #333;
   --box-shadow-color: rgba(32, 32, 32, 0.4);
@@ -164,6 +167,10 @@ body.dark-theme {
   border: 1px solid var(--item-border-color);
   box-shadow: 4px 4px 3px var(--box-shadow-color);
   cursor: pointer;
+}
+
+.feed > details > summary .icon {
+  margin-right: 0.5em;
 }
 
 .feed .feeddate {
