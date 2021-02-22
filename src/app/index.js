@@ -51,20 +51,26 @@ const updateFeedsData = async (extraProps = {}) => {
 
   const feedCutoffTime = Date.now() - DISPLAY_MAX_AGE;
 
-  const feedsMeta = Object.values(await Store.getAllFeedsMeta()).filter(
-    (feed) =>
-      !feed.ignored && new Date(feed.lastNewAt).getTime() > feedCutoffTime
-  );
-  feedsMeta.sort((a, b) => b.lastNewAt.localeCompare(a.lastNewAt));
+  const feedsMeta = Object.values(await Store.getAllFeedsMeta())
+    .filter(
+      (feed) =>
+        !feed.ignored &&
+        feed.lastNewAt &&
+        new Date(feed.lastNewAt).getTime() > feedCutoffTime
+    );
 
   const feeds = [];
   for (const feedMeta of feedsMeta) {
     const feed = await Store.getFeed(feedMeta.id);
     if (feed.ignored) continue; // FIXME: seems missing from feedsMeta?
-    feed.items = feed.items.filter(item => getItemTime(item) > feedCutoffTime);
+    feed.items = feed.items.filter(
+      (item) => getItemTime(item) > feedCutoffTime
+    );
     if (!feed.items.length) continue;
     feeds.push(feed);
   }
+
+  feeds.sort((a, b) => b.lastNewAt.localeCompare(a.lastNewAt));
 
   updateApp({ ...extraProps, feeds, busy: false });
 

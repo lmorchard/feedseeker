@@ -181,9 +181,14 @@ export async function pollOneFeed(feedID) {
   mergedItems.sort((a, b) => getItemTime(b) - getItemTime(a));
 
   let lastNewAt = feed.lastNewAt;
+  /*
   if (newItems.length) {
     lastNewAt = timeNow;
   } else if (!lastNewAt && mergedItems.length) {
+    lastNewAt = new Date(getItemTime(mergedItems[0])).toISOString();
+  }
+  */
+  if (mergedItems.length) {
     lastNewAt = new Date(getItemTime(mergedItems[0])).toISOString();
   }
 

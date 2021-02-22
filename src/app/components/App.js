@@ -33,13 +33,6 @@ export const App = (props = {}) => {
     await setAppTheme(applyDarkTheme ? "dark" : "light");
   }, [applyDarkTheme]);
 
-  const itemsSorted = [...items]
-    .sort((a, b) => getItemTime(b) - getItemTime(a))
-    .slice(0, displayLimit);
-  if (DEBUG) {
-    window.feedItemsSorted = itemsSorted;
-  }
-
   const formatStatus = ({ isRunning, pending, size } = {}) =>
     isRunning
       ? `${("" + pending).padStart(3, "0")} / ${("" + size).padStart(3, "0")}`
