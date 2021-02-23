@@ -151,7 +151,7 @@ body.dark-theme {
 
 .feeds .feed {
   list-style-type: none;
-  margin-bottom: 1em;
+  margin-bottom: 0.5em;
 }
 
 .feed > .title,
@@ -182,7 +182,7 @@ body.dark-theme {
   margin: 0;
   padding: 0;
   margin-top: 1em;
-  margin-bottom: 2em;
+  margin-bottom: 2.5em;
   margin-right: -1.25em;
 
   display: flex;
@@ -190,6 +190,23 @@ body.dark-theme {
   align-items: stretch;
   justify-content: flex-start;
   flex-wrap: wrap;
+}
+
+.feed button.more-items {
+  display: block;
+  width: 100%;
+  font-size: 1em;
+  padding: 0.5em 1em;
+  margin: -1.5em 0 2.5em 0;
+  color: var(--nav-button-color);
+  background-color: var(--nav-button-bg-color);
+  border: 1px solid var(--nav-button-bg-color);
+  box-shadow: 4px 4px 3px var(--box-shadow-color);
+  cursor: pointer;
+}
+
+.feed button.more-items:hover {
+  background-color: var(--nav-button-hover-bg-color);
 }
 
 .feeditems .feeditem {

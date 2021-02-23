@@ -59,7 +59,7 @@ const updateFeedsData = async (extraProps = {}) => {
         new Date(feed.lastNewAt).getTime() > feedCutoffTime
     );
 
-  const feeds = [];
+  const feeds = {};
   for (const feedMeta of feedsMeta) {
     const feed = await Store.getFeed(feedMeta.id);
     if (feed.ignored) continue; // FIXME: seems missing from feedsMeta?
@@ -67,10 +67,8 @@ const updateFeedsData = async (extraProps = {}) => {
       (item) => getItemTime(item) > feedCutoffTime
     );
     if (!feed.items.length) continue;
-    feeds.push(feed);
+    feeds[feed.id] = feed;
   }
-
-  feeds.sort((a, b) => b.lastNewAt.localeCompare(a.lastNewAt));
 
   updateApp({ ...extraProps, feeds, busy: false });
 

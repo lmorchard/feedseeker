@@ -1,25 +1,25 @@
 import { html } from "htm/preact";
 import { useState, useCallback, useEffect } from "preact/hooks";
 import { hslToRgb } from "../../lib/hslToRgb";
-import { getItemTime } from "../../lib/feeds";
 import Feed from "./Feed";
 import { LazyLoadManager } from "./LazyLoad";
 import AppContext from "./AppContext";
 
 export const App = (props = {}) => {
   const {
-    config: { DEBUG, DISPLAY_LIMIT },
     stats = {},
-    feeds = [],
-    items = [],
+    feeds = {},
     initialTheme = "light",
-    displayLimit = DISPLAY_LIMIT,
     busy = false,
     setAppTheme,
     pollAllFeeds,
     discoverThumbsForAllFeeds,
     updateFeedsData,
   } = props;
+
+  const feedsSorted = Object.values(feeds).sort((a, b) =>
+    b.lastNewAt.localeCompare(a.lastNewAt)
+  );
 
   const [applyDarkTheme, setApplyDarkTheme] = useState(initialTheme === "dark");
 
@@ -43,18 +43,21 @@ export const App = (props = {}) => {
   const feedsStatus = formatStatus(queueStats.feedPollQueue);
   const thumbsStatus = formatStatus(queueStats.discoverThumbQueue);
 
+  /*
   const HB_COLOR_CYCLE_INTERVAL = 5000;
   const [hbR, hbG, hbB] = hslToRgb(
     (timeStats % HB_COLOR_CYCLE_INTERVAL) / HB_COLOR_CYCLE_INTERVAL,
     0.6,
     applyDarkTheme ? 0.7 : 0.3
   );
+  //  style=${{ color: `rgb(${hbR}, ${hbG}, ${hbB})` }}
+  */
 
   return html`
     <${AppContext.Provider} value=${props}>
       <${LazyLoadManager}>
         <header>
-          <h1 style=${{ color: `rgb(${hbR}, ${hbG}, ${hbB})` }}>FeedSeeker</h1>
+          <h1>FeedSeeker</h1>
           <nav>
             <span class="busy-indicator${busy ? " busy" : ""}"></span>
             <button onClick=${updateFeedsData}>⭯</button>
@@ -67,8 +70,8 @@ export const App = (props = {}) => {
         </header>
 
         <ul class="feeds">
-          ${feeds.map(
-            (feed) => html`<${Feed} id="feed-${feed.id}" key=${feed.id} ...${{ feed }} />`
+          ${feedsSorted.map(
+            (feed) => html`<${Feed} key=${feed.id} ...${{ feed }} />`
           )}
         </ul>
       <//>
